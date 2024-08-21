@@ -1,6 +1,6 @@
-# Daily Core
+# Daily Core SDK
 
-`daily-core` is a preliminary SDK to build native applications for the
+`daily-core-sdk` is a preliminary SDK to build native applications for the
 [Daily](https://daily.co) platform with a simple static library and a C header
 file.
 
