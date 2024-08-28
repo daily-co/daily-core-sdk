@@ -15,9 +15,11 @@
 
 static const char* DEFAULT_CLIENT_NAME = "Guest";
 
+// NOTE: Do not modify. This is a way for the server to recognize a known
+// client library.
 static DailyAboutClient about_client = {
-        .library = "daily-example",
-        .version = "0.0.1"};
+        .library = "daily-core-sdk",
+        .version = "0.10.1"};
 
 static bool running = true;
 static bool quit = false;
