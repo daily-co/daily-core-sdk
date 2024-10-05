@@ -35,20 +35,9 @@ add_executable(daily_example ${DAILY_EXAMPLE_HEADERS} ${DAILY_EXAMPLE_SOURCES})
 set_target_properties(daily_example PROPERTIES OUTPUT_NAME "daily-example")
 
 #
-# Automatically detect platform.
-#
-if(UNIX AND NOT APPLE)
-  set(TARGET "${CMAKE_SYSTEM_PROCESSOR}-unknown-linux-gnu")
-elseif(APPLE)
-  if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
-    set(TARGET "aarch64-apple-darwin")
-  endif()
-endif()
-
-#
 # Look for libdaily_core.a
 #
-find_library(DAILY_CORE daily_core HINTS "${DAILY_CORE_PATH}/lib/${TARGET}")
+find_library(DAILY_CORE daily_core HINTS "${DAILY_CORE_PATH}/lib")
 if(NOT DAILY_CORE)
   message(FATAL_ERROR "Couldn't find 'daily_core' library.")
 endif()
