@@ -1,8 +1,7 @@
-# Daily Core SDK
+# Daily Core C++ SDK
 
-`daily-core-sdk` is a preliminary SDK to build native applications for the
-[Daily](https://daily.co) platform with a simple static library and a C header
-file.
+`daily-core-sdk` is a C++ SDK to build native client applications for the
+[Daily](https://daily.co) platform.
 
 It supports Linux (`x86_64` and `aarch64`) and macOS (`aarch64`).
 
