@@ -6,12 +6,20 @@
 
 #include "json.hpp"
 
-#include <pthread.h>
 #include <signal.h>
 #include <time.h>
-#include <unistd.h>
 
+#include <atomic>
 #include <iostream>
+#include <thread>
+
+#ifdef _WIN32
+#include <windows.h>
+#define SLEEP_MS(ms) Sleep(ms)
+#else
+#include <unistd.h>
+#define SLEEP_MS(ms) usleep((ms) * 1000)
+#endif
 
 static const char* DEFAULT_CLIENT_NAME = "Guest";
 
@@ -19,10 +27,11 @@ static const char* DEFAULT_CLIENT_NAME = "Guest";
 // client library.
 static DailyAboutClient about_client = {
         .library = "daily-core-sdk",
-        .version = "0.10.1"};
+        .version = "0.10.1"
+};
 
-static bool running = true;
-static bool quit = false;
+static std::atomic<bool> running = true;
+static std::atomic<bool> quit = false;
 
 // Simple hashing function so we can fake pattern matching and switch on strings
 // as a constexpr so it gets evaluated in compile time for static strings
@@ -76,7 +85,7 @@ static void event_listener(
         std::cout << "Error: " << json.dump() << std::endl;
         break;
     case hash("request-completed"): {
-        auto request_id = json["requestId"]["id"].get<u_int64_t>();
+        auto request_id = json["requestId"]["id"].get<uint64_t>();
         if (app_data->leave_request_id == request_id) {
             std::cout << std::endl;
             std::cout << "Quitting..." << std::endl;
@@ -160,12 +169,13 @@ static DailyWebRtcContextDelegate webrtc_context_delegate() {
                     .get_enumerated_devices = enumerate_devices_cb,
                     .create_audio_device_module = create_audio_device_module_cb,
                     .get_audio_device = get_audio_device_cb,
-                    .set_audio_device = set_audio_device_cb}};
+                    .set_audio_device = set_audio_device_cb}
+    };
     return webrtc;
 }
 
-static void* mirror_audio_thread(void* args) {
-    DailyExampleData* data = (DailyExampleData*)args;
+static void mirror_audio_thread_handler(void* args) {
+    DailyExampleData* data = static_cast<DailyExampleData*>(args);
     std::cout << std::endl
               << "Waiting for participants to join..." << std::endl;
     while (running) {
@@ -178,10 +188,9 @@ static void* mirror_audio_thread(void* args) {
                     data->microphone, frames, 160, 0, nullptr, nullptr
             );
         } else {
-            usleep(10000);
+            SLEEP_MS(10);
         }
     }
-    pthread_exit(NULL);
 }
 
 static void signal_handler(int signum) {
@@ -205,25 +214,20 @@ int main(int argc, char* argv[]) {
     char* token = nullptr;
     char* client_name = (char*)DEFAULT_CLIENT_NAME;
 
-    int opt;
-    while ((opt = getopt(argc, argv, "m:t:n:")) != -1) {
-        switch (opt) {
-        case 'm':
-            url = strdup(optarg);
-            break;
-        case 't':
-            token = strdup(optarg);
-            break;
-        case 'n':
-            client_name = strdup(optarg);
-            break;
-        default:
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "-m") == 0 && i + 1 < argc) {
+            url = argv[++i];
+        } else if (strcmp(argv[i], "-t") == 0 && i + 1 < argc) {
+            token = argv[++i];
+        } else if (strcmp(argv[i], "-n") == 0 && i + 1 < argc) {
+            client_name = argv[++i];
+        } else {
             usage();
             return EXIT_FAILURE;
         }
     }
 
-    if (optind < argc || url == nullptr) {
+    if (url == nullptr) {
         usage();
         return EXIT_SUCCESS;
     }
@@ -262,7 +266,8 @@ int main(int argc, char* argv[]) {
     app_data->client_name = std::string(client_name);
 
     DailyCallClientDelegate delegate = {
-            .ptr = app_data, .fns = {.on_event = event_listener}};
+            .ptr = app_data, .fns = {.on_event = event_listener}
+    };
 
     // Setup delegate. This will handle events from the library.
     daily_core_call_client_set_delegate(client, delegate);
@@ -308,18 +313,10 @@ int main(int argc, char* argv[]) {
     );
 
     // Create audio mirror thread.
-    pthread_t mirror_thread;
-    if (pthread_create(&mirror_thread, NULL, mirror_audio_thread, app_data) !=
-        0) {
-        perror("Error creating mirror thread");
-        return EXIT_FAILURE;
-    }
+    std::thread mirror_thread(mirror_audio_thread_handler, app_data);
 
     // Wait for mirror thread to finish.
-    if (pthread_join(mirror_thread, NULL) != 0) {
-        perror("Error joining mirror thread");
-        return EXIT_FAILURE;
-    }
+    mirror_thread.join();
 
     // Store the leave request id so we can detect when it finishes in the event
     // handler.
@@ -328,7 +325,7 @@ int main(int argc, char* argv[]) {
 
     // Nicely wait until client properly leaves.
     while (!quit) {
-        sleep(1);
+        SLEEP_MS(1000);
     }
 
     daily_core_call_client_destroy(app_data->client);

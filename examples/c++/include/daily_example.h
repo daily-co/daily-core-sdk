@@ -2,8 +2,8 @@
 // Copyright (c) 2024, Daily
 //
 
-#ifndef _DAILY_EXAMPLE_H
-#define _DAILY_EXAMPLE_H
+#ifndef DAILY_EXAMPLE_H
+#define DAILY_EXAMPLE_H
 
 extern "C" {
 #include "daily_core.h"
@@ -18,8 +18,8 @@ struct DailyExampleData {
     DailyVirtualSpeakerDevice* speaker;
     DailyVirtualMicrophoneDevice* microphone;
 
-    u_int64_t request_id;
-    u_int64_t leave_request_id;
+    uint64_t request_id;
+    uint64_t leave_request_id;
     std::string client_name;
     bool first_participant_joined;
 };

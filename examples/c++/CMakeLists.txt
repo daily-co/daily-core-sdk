@@ -6,14 +6,16 @@ cmake_minimum_required(VERSION 3.16)
 
 project(daily_example LANGUAGES CXX)
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
-endif()
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# C++ standard requirements.
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+if(MSVC)
+  set(CMAKE_CXX_STANDARD 20)
+else()
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(DAILY_EXAMPLE_SOURCES
@@ -36,20 +38,7 @@ set(DAILY_CORE_PATH "$ENV{DAILY_CORE_PATH}")
 
 add_executable(daily_example ${DAILY_EXAMPLE_HEADERS} ${DAILY_EXAMPLE_SOURCES})
 
-set_target_properties(daily_example PROPERTIES OUTPUT_NAME "daily-example")
-
-#
-# Look for libdaily_core.a
-#
-find_library(DAILY_CORE daily_core HINTS "${DAILY_CORE_PATH}/lib")
-if(NOT DAILY_CORE)
-  message(FATAL_ERROR "Couldn't find 'daily_core' library.")
-endif()
-
-#
-# C++ and Linker flags.
-#
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-rtti")
+find_package(DailyCore)
 
 #
 # This project header directories.
@@ -57,19 +46,24 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-rtti")
 target_include_directories(daily_example
   PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
-  ${DAILY_CORE_PATH}/include
+  ${DAILY_CORE_INCLUDE_DIRS}
 )
 
 target_link_libraries(daily_example
   PRIVATE
-  ${DAILY_CORE}
-  -lpthread
+  ${DAILY_CORE_LIBRARIES}
 )
 
 #
 # Specific headers, libraries and flags for each paltform.
 #
+if(UNIX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-rtti")
+endif()
+
 if(APPLE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+
   find_library(CORE_GRAPHICS CoreGraphics)
   find_library(CORE_MEDIA CoreMedia)
   find_library(CORE_AUDIO CoreAudio)
@@ -86,8 +80,6 @@ if(APPLE)
   find_library(OPENGL OpenGL)
   find_library(QUARTZ_CORE QuartzCore)
 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
-
   target_link_libraries(daily_example
     PRIVATE
     ${CORE_GRAPHICS}
@@ -98,7 +90,7 @@ if(APPLE)
     ${VIDEO_TOOLBOX}
     ${SECURITY}
     ${FOUNDATION}
-     # The ones below are needed when linking with -ObjC
+    # The ones below are needed when linking with -ObjC
     -ObjC
     ${APP_KIT}
     ${AVFOUNDATION}
@@ -106,5 +98,31 @@ if(APPLE)
     ${METAL_KIT}
     ${OPENGL}
     ${QUARTZ_CORE}
+  )
+endif()
+
+if(MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_ITERATOR_DEBUG_LEVEL=0")
+
+  # System libraries.
+  target_link_libraries(daily_example
+    PRIVATE
+    msdmo
+    wmcodecdspuuid
+    dmoguids
+    iphlpapi
+    ole32
+    secur32
+    winmm
+    ws2_32
+    strmiids
+    d3d11
+    gdi32
+    dxgi
+    dwmapi
+    shcore
+    ntdll
+    userenv
+    bcrypt
   )
 endif()

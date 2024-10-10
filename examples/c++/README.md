@@ -3,25 +3,29 @@
 Before building the example we need to declare a few environment variables:
 
 ```bash
-export DAILY_CORE_PATH=/path/to/daily-core
+DAILY_CORE_PATH=/path/to/daily-core
 ```
 
-After that, it should be as simple as running:
+## Linux and macOS
 
 ```bash
-cmake . -Bbuild
+cmake . -G Ninja -Bbuild -DCMAKE_BUILD_TYPE=Release
+ninja -C build
 ```
 
-You can also specify if you want `Debug` (default) or `Release`:
+## Windows
+
+Initialize the command-line development environment.
 
 ```bash
-cmake . -Bbuild -DCMAKE_BUILD_TYPE=Release
+"C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvarsall.bat" amd64
 ```
 
-then, just compile:
+And then configure and build:
 
 ```bash
-make -C build
+cmake . -Bbuild --preset vcpkg
+cmake --build build --config Release
 ```
 
 ## Cross-compiling (Linux aarch64)
@@ -29,19 +33,8 @@ make -C build
 It is possible to build the example for the `aarch64` architecture in Linux with:
 
 ```bash
-cmake . -Bbuild -DCMAKE_TOOLCHAIN_FILE=aarch64-linux-toolchain.cmake
-```
-
-or in release mode:
-
-```bash
 cmake . -Bbuild -DCMAKE_TOOLCHAIN_FILE=aarch64-linux-toolchain.cmake -DCMAKE_BUILD_TYPE=Release
-```
-
-And finally, as before:
-
-```bash
-make -C build
+ninja -C build
 ```
 
 ## Usage
@@ -50,7 +43,7 @@ After building the example you should be able to run it:
 
 
 ```bash
-./build/daily-example
+./build/daily_example
 ```
 
 | Argument | Description                                                               |
