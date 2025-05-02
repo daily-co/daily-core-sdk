@@ -6,6 +6,7 @@
 
 #include "json.hpp"
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <signal.h>
 #include <time.h>
