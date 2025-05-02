@@ -6,6 +6,8 @@
 
 #include "json.hpp"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
 #include <signal.h>
 #include <time.h>
 
@@ -21,7 +23,7 @@
 #define SLEEP_MS(ms) usleep((ms) * 1000)
 #endif
 
-static const char* DEFAULT_CLIENT_NAME = "Guest";
+static const char* DEFAULT_CLIENT_NAME = "Sender";
 
 // NOTE: Do not modify. This is a way for the server to recognize a known
 // client library.
@@ -47,8 +49,6 @@ static void on_participant_joined(
 
     std::cout << std::endl
               << "Participant joined " << participant_id << std::endl;
-
-    data->first_participant_joined = true;
 }
 
 static void
@@ -157,7 +157,6 @@ static DailyWebRtcContextDelegate webrtc_context_delegate() {
     data->device_manager = device_manager;
     data->request_id = 0;
     data->leave_request_id = -1;
-    data->first_participant_joined = false;
 
     DailyWebRtcContextDelegate webrtc = {
             .ptr = (DailyWebRtcContextDelegatePtr*)data,
@@ -170,22 +169,36 @@ static DailyWebRtcContextDelegate webrtc_context_delegate() {
     return webrtc;
 }
 
-static void mirror_audio_thread_handler(void* args) {
+static void wave_audio_thread_handler(void* args) {
     DailyExampleData* data = static_cast<DailyExampleData*>(args);
-    std::cout << std::endl
-              << "Waiting for participants to join..." << std::endl;
+
+    static const int64_t FRAME_COUNT = 160;  // 10 ms of audio at 16 kHz
+    static const int16_t SAMPLE_RATE = 16000;
+    static const double FREQUENCY = 440.0;
+    static const double AMPLITUDE = 3000;
+
+    double phase = 0.0;
+    const double phase_increment = 2.0 * M_PI * FREQUENCY / SAMPLE_RATE;
+
+    std::cout << std::endl << "Sending custom track 'cxx-wave'..." << std::endl;
     while (running) {
-        if (data->first_participant_joined) {
-            int16_t frames[320];  // 320 = 16000 / 100 * 2 bytes * 1 channels
-            daily_core_context_virtual_speaker_device_read_frames(
-                    data->speaker, frames, 160, 0, nullptr, nullptr
-            );
-            daily_core_context_virtual_microphone_device_write_frames(
-                    data->microphone, frames, 160, 0, nullptr, nullptr
-            );
-        } else {
-            SLEEP_MS(10);
+        int16_t frames[FRAME_COUNT];
+
+        for (int i = 0; i < FRAME_COUNT; ++i) {
+            frames[i] = (int16_t)(AMPLITUDE * sin(phase));
+            phase += phase_increment;
+            if (phase >= 2.0 * M_PI)
+                phase -= 2.0 * M_PI;
         }
+
+        daily_core_context_custom_audio_source_write_frames_sync(
+                data->custom_audio_source,
+                frames,
+                16,
+                SAMPLE_RATE,
+                1,
+                FRAME_COUNT
+        );
     }
 }
 
@@ -197,7 +210,7 @@ static void signal_handler(int signum) {
 }
 
 static void usage() {
-    std::cout << "Usage: daily_example -m MEETING_URL [-t MEETING_TOKEN] -n "
+    std::cout << "Usage: daily_sender -m MEETING_URL [-t MEETING_TOKEN] -n "
                  "CLIENT_NAME"
               << std::endl;
     std::cout << "  -m    Daily meeting URL" << std::endl;
@@ -241,25 +254,14 @@ int main(int argc, char* argv[]) {
 
     DailyExampleData* app_data = (DailyExampleData*)webrtc.ptr;
 
-    DailyVirtualSpeakerDevice* speaker =
-            daily_core_context_create_virtual_speaker_device(
-                    app_data->device_manager, "speaker", 16000, 1, false
-            );
-    daily_core_context_select_speaker_device(
-            app_data->device_manager, "speaker"
-    );
-
-    DailyVirtualMicrophoneDevice* microphone =
-            daily_core_context_create_virtual_microphone_device(
-                    app_data->device_manager, "mic", 16000, 1, false
-            );
+    DailyAudioSource* audio_source =
+            daily_core_context_create_custom_audio_source();
 
     DailyRawCallClient* client = daily_core_call_client_create();
 
     // Update the WebRTC context.
     app_data->client = client;
-    app_data->speaker = speaker;
-    app_data->microphone = microphone;
+    app_data->custom_audio_source = audio_source;
     app_data->client_name = std::string(client_name);
 
     DailyCallClientDelegate delegate = {
@@ -269,11 +271,11 @@ int main(int argc, char* argv[]) {
     // Setup delegate. This will handle events from the library.
     daily_core_call_client_set_delegate(client, delegate);
 
-    // Subscriptions profiles
+    // Subscriptions profiles. We don't want to subscribe to any track.
     nlohmann::json profiles = nlohmann::json::parse(R"({
       "base": {
         "camera": "unsubscribed",
-        "microphone": "subscribed"
+        "microphone": "unsubscribed"
       }
     })");
 
@@ -285,11 +287,11 @@ int main(int argc, char* argv[]) {
     nlohmann::json settings = nlohmann::json::parse(R"({
       "inputs": {
         "camera": false,
-        "microphone": {
-          "isEnabled": true,
-          "settings": {
-            "deviceId": "mic"
-          }
+        "microphone": false
+      },
+      "publishing": {
+        "customAudio": {
+          "cxx-wave": true
         }
       }
     })");
@@ -298,6 +300,14 @@ int main(int argc, char* argv[]) {
             app_data->client,
             app_data->request_id++,
             app_data->client_name.c_str()
+    );
+
+    // We will be sending an audio wave to a custom track name "cxx-wave".
+    const DailyAudioTrack* audio_track =
+            daily_core_context_create_custom_audio_track(audio_source);
+
+    daily_core_call_client_add_custom_audio_track(
+            client, app_data->request_id++, "cxx-wave", audio_track
     );
 
     std::cout << std::endl << "Joining " << url << std::endl;
@@ -309,11 +319,11 @@ int main(int argc, char* argv[]) {
             settings.dump().c_str()
     );
 
-    // Create audio mirror thread.
-    std::thread mirror_thread(mirror_audio_thread_handler, app_data);
+    // Create audio wave thread.
+    std::thread wave_thread(wave_audio_thread_handler, app_data);
 
-    // Wait for mirror thread to finish.
-    mirror_thread.join();
+    // Wait for wave audio thread to finish.
+    wave_thread.join();
 
     // Store the leave request id so we can detect when it finishes in the event
     // handler.

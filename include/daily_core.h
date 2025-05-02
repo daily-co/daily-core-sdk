@@ -1,4 +1,4 @@
-/* Copyright Daily.co 2022. All Rights Reserved */
+/* Copyright (c) 2022-2025, Daily */
 
 #pragma once
 
@@ -168,6 +168,17 @@ typedef struct DailyCallClientInputsFns {
   void (*remove_custom_video_track)(struct DailyRawCallClient *client,
                                     uint64_t request_id,
                                     const char *name);
+  void (*add_custom_audio_track)(struct DailyRawCallClient *client,
+                                 uint64_t request_id,
+                                 const char *name,
+                                 const void *track_ptr);
+  void (*update_custom_audio_track)(struct DailyRawCallClient *client,
+                                    uint64_t request_id,
+                                    const char *name,
+                                    const void *track_ptr);
+  void (*remove_custom_audio_track)(struct DailyRawCallClient *client,
+                                    uint64_t request_id,
+                                    const char *name);
 } DailyCallClientInputsFns;
 #endif
 
@@ -189,20 +200,20 @@ typedef void (*DailyCallClientOnEventFn)(DailyRawCallClientDelegate *delegate,
 #endif
 
 #if !defined(WASM32)
-typedef struct NativeAudioData {
+typedef struct DailyAudioData {
   uint32_t bits_per_sample;
   uint32_t sample_rate;
   uintptr_t num_channels;
   uintptr_t num_audio_frames;
   const uint8_t *audio_frames;
-} NativeAudioData;
+} DailyAudioData;
 #endif
 
 #if !defined(WASM32)
-typedef void (*NativeCallClientDelegateOnAudioDataFn)(DailyRawCallClientDelegate *delegate,
-                                                      uint64_t renderer_id,
-                                                      const char *peer_id,
-                                                      const struct NativeAudioData *audio_data);
+typedef void (*DailyCallClientOnAudioDataFn)(DailyRawCallClientDelegate *delegate,
+                                             uint64_t renderer_id,
+                                             const char *peer_id,
+                                             const struct DailyAudioData *audio_data);
 #endif
 
 #if !defined(WASM32)
@@ -229,7 +240,7 @@ typedef void (*DailyCallClientOnVideoFrameFn)(DailyRawCallClientDelegate *delega
  */
 typedef struct DailyCallClientDelegateFns {
   DailyCallClientOnEventFn on_event;
-  NativeCallClientDelegateOnAudioDataFn on_audio_data;
+  DailyCallClientOnAudioDataFn on_audio_data;
   DailyCallClientOnVideoFrameFn on_video_frame;
 } DailyCallClientDelegateFns;
 #endif
@@ -377,14 +388,23 @@ typedef struct DailyCallClientFns {
 #endif
 
 #if !defined(WASM32)
-typedef struct NativeCallClientDialoutFns {
+typedef struct DailyCallClientDialoutFns {
   void (*start_dialout)(struct DailyRawCallClient *client,
                         uint64_t request_id,
                         const char *properties);
   void (*stop_dialout)(struct DailyRawCallClient *client,
                        uint64_t request_id,
                        const char *participant_id);
-} NativeCallClientDialoutFns;
+} DailyCallClientDialoutFns;
+#endif
+
+#if !defined(WASM32)
+typedef struct DailyCallClientSipFns {
+  void (*call_transfer)(struct DailyRawCallClient *client,
+                        uint64_t request_id,
+                        const char *properties);
+  void (*refer)(struct DailyRawCallClient *client, uint64_t request_id, const char *properties);
+} DailyCallClientSipFns;
 #endif
 
 #if !defined(WASM32)
@@ -459,11 +479,11 @@ typedef void *(*DailyWebRtcContextDelegateGetUserMediaFn)(DailyRawWebRtcContextD
  *
  * Returns a retained `webrtc::MediaStreamInterface*`, detached via `.release()`.
  */
-typedef void *(*NativeWebRtcContextDelegateGetDisplayMediaFn)(DailyRawWebRtcContextDelegate *delegate,
-                                                              WebrtcPeerConnectionFactory *peer_connection_factory,
-                                                              WebrtcThread *signaling_thread,
-                                                              WebrtcThread *worker_thread,
-                                                              WebrtcThread *network_thread);
+typedef void *(*DailyWebRtcContextDelegateGetDisplayMediaFn)(DailyRawWebRtcContextDelegate *delegate,
+                                                             WebrtcPeerConnectionFactory *peer_connection_factory,
+                                                             WebrtcThread *signaling_thread,
+                                                             WebrtcThread *worker_thread,
+                                                             WebrtcThread *network_thread);
 #endif
 
 #if !defined(WASM32)
@@ -546,6 +566,10 @@ typedef void (*DailyWebRtcContextDelegateSetAudioDeviceFn)(DailyRawWebRtcContext
 #endif
 
 #if !defined(WASM32)
+typedef const char *(*DailyWebRtcContextDelegateGetIgnoredNetworkDevicesFn)(DailyRawWebRtcContextDelegate *delegate);
+#endif
+
+#if !defined(WASM32)
 /**
  * Functions for integrating Daily with the given native platform.
  */
@@ -557,7 +581,7 @@ typedef struct DailyWebRtcContextDelegateFns {
   /**
    * Platform-provided implementation of `MediaDevices.getDisplayMedia()`.
    */
-  NativeWebRtcContextDelegateGetDisplayMediaFn get_display_media;
+  DailyWebRtcContextDelegateGetDisplayMediaFn get_display_media;
   /**
    * Platform-provided implementation of `MediaDevices.enumerateDevices()`.
    */
@@ -587,6 +611,10 @@ typedef struct DailyWebRtcContextDelegateFns {
    */
   DailyWebRtcContextDelegateGetAudioDeviceFn get_audio_device;
   DailyWebRtcContextDelegateSetAudioDeviceFn set_audio_device;
+  /**
+   * Platform-provided function to request the list of ignored network interfaces, as a JSON array.
+   */
+  DailyWebRtcContextDelegateGetIgnoredNetworkDevicesFn get_ignored_network_devices;
 } DailyWebRtcContextDelegateFns;
 #endif
 
@@ -624,11 +652,33 @@ typedef struct DailyAboutClient {
    * Operating system version, as a UTF-8 string
    */
   const char *operating_system_version;
+  /**
+   * App package name, as a UTF-8 string, or NULL
+   */
+  const char *app_package_name;
 } DailyAboutClient;
 #endif
 
 #if !defined(WASM32)
-typedef void NativeDeviceManager;
+typedef void DailyDeviceManager;
+#endif
+
+#if !defined(WASM32)
+typedef void DailyAudioSource;
+#endif
+
+#if !defined(WASM32)
+typedef void DailyRawAudioSenderDelegate;
+#endif
+
+#if !defined(WASM32)
+typedef void (*DailyAudioSenderOnWriteFramesFn)(DailyRawAudioSenderDelegate *delegate,
+                                                uint64_t request_id,
+                                                uintptr_t num_frames);
+#endif
+
+#if !defined(WASM32)
+typedef void DailyAudioTrack;
 #endif
 
 #if !defined(WASM32)
@@ -636,7 +686,7 @@ typedef void WebrtcMediaStream;
 #endif
 
 #if !defined(WASM32)
-typedef void NativeVirtualCameraDevice;
+typedef void DailyVirtualCameraDevice;
 #endif
 
 #if !defined(WASM32)
@@ -648,28 +698,18 @@ typedef void DailyVirtualMicrophoneDevice;
 #endif
 
 #if !defined(WASM32)
-typedef void NativeRawVirtualSpeakerDeviceDelegate;
+typedef void DailyRawVirtualSpeakerDeviceDelegate;
 #endif
 
 #if !defined(WASM32)
-typedef void (*NativeVirtualSpeakerDeviceOnReadFramesFn)(NativeRawVirtualSpeakerDeviceDelegate *delegate,
-                                                         uint64_t request_id,
-                                                         int16_t *frames,
-                                                         uintptr_t num_frames);
+typedef void (*DailyVirtualSpeakerDeviceOnReadFramesFn)(DailyRawVirtualSpeakerDeviceDelegate *delegate,
+                                                        uint64_t request_id,
+                                                        int16_t *frames,
+                                                        uintptr_t num_frames);
 #endif
 
 #if !defined(WASM32)
-typedef void NativeRawVirtualMicrophoneDeviceDelegate;
-#endif
-
-#if !defined(WASM32)
-typedef void (*NativeVirtualMicrophoneDeviceOnWriteFramesFn)(NativeRawVirtualMicrophoneDeviceDelegate *delegate,
-                                                             uint64_t request_id,
-                                                             uintptr_t num_frames);
-#endif
-
-#if !defined(WASM32)
-typedef void NativeVad;
+typedef void DailyVad;
 #endif
 
 #if !defined(WASM32)
@@ -849,12 +889,12 @@ void daily_core_call_client_trigger_devices_changed(struct DailyRawCallClient *c
 #endif
 
 #if !defined(WASM32)
-struct NativeCallClientDialoutFns daily_core_call_client_dialout_fns(void);
+struct DailyCallClientDialoutFns daily_core_call_client_dialout_fns(void);
 #endif
 
 #if !defined(WASM32)
 /**
- * Start a dialout
+ * Start a dial-out to SIP or PSTN.
  */
 void daily_core_call_client_start_dialout(struct DailyRawCallClient *client,
                                           uint64_t request_id,
@@ -863,11 +903,20 @@ void daily_core_call_client_start_dialout(struct DailyRawCallClient *client,
 
 #if !defined(WASM32)
 /**
- * Stop a dialout
+ * Stop an existing dial-out session.
  */
 void daily_core_call_client_stop_dialout(struct DailyRawCallClient *client,
                                          uint64_t request_id,
                                          const char *participant_id);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Send DTMF tones in a dial-out session.
+ */
+void daily_core_call_client_send_dtmf(struct DailyRawCallClient *client,
+                                      uint64_t request_id,
+                                      const char *properties);
 #endif
 
 #if !defined(WASM32)
@@ -899,6 +948,9 @@ void daily_core_call_client_update_inputs(struct DailyRawCallClient *client,
 #if !defined(WASM32)
 /**
  * Adds a custom video track
+ * # Safety
+ * Will crash if the `name` parameter is not a valid pointer to a `const char
+ * *` or if `track_ptr` is not a valid pointer to a video media track.
  */
 void daily_core_call_client_add_custom_video_track(struct DailyRawCallClient *client,
                                                    uint64_t request_id,
@@ -909,6 +961,9 @@ void daily_core_call_client_add_custom_video_track(struct DailyRawCallClient *cl
 #if !defined(WASM32)
 /**
  * Updates a custom video track
+ * # Safety
+ * Will crash if the `name` parameter is not a valid pointer to a `const char
+ * *` or if `track_ptr` is not a valid pointer to a video media track.
  */
 void daily_core_call_client_update_custom_video_track(struct DailyRawCallClient *client,
                                                       uint64_t request_id,
@@ -919,8 +974,49 @@ void daily_core_call_client_update_custom_video_track(struct DailyRawCallClient 
 #if !defined(WASM32)
 /**
  * Removes a custom video track
+ * # Safety
+ * Will crash if the `name` parameter is not a valid pointer to a `const char
+ * *`.
  */
 void daily_core_call_client_remove_custom_video_track(struct DailyRawCallClient *client,
+                                                      uint64_t request_id,
+                                                      const char *name);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Adds a custom audio track
+ * # Safety
+ * Will crash if the `name` parameter is not a valid pointer to a `const char
+ * *` or if `track_ptr` is not a valid pointer to a audio media track.
+ */
+void daily_core_call_client_add_custom_audio_track(struct DailyRawCallClient *client,
+                                                   uint64_t request_id,
+                                                   const char *name,
+                                                   const void *track_ptr);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Updates a custom audio track
+ * # Safety
+ * Will crash if the `name` parameter is not a valid pointer to a `const char
+ * *` or if `track_ptr` is not a valid pointer to a audio media track.
+ */
+void daily_core_call_client_update_custom_audio_track(struct DailyRawCallClient *client,
+                                                      uint64_t request_id,
+                                                      const char *name,
+                                                      const void *track_ptr);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Removes a custom audio track
+ * # Safety
+ * Will crash if the `name` parameter is not a valid pointer to a `const char
+ * *`.
+ */
+void daily_core_call_client_remove_custom_audio_track(struct DailyRawCallClient *client,
                                                       uint64_t request_id,
                                                       const char *name);
 #endif
@@ -1144,6 +1240,30 @@ void daily_core_call_client_update_recording(struct DailyRawCallClient *client,
 #endif
 
 #if !defined(WASM32)
+struct DailyCallClientSipFns daily_core_call_client_sip_call_transfer_fns(void);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Transfer a SIP dial-in call from one Daily room to another Daily
+ * room. Alternatively, transfer an initiated SIP/PSTN Dialout to another SIP
+ * URI or PSTN number.
+ */
+void daily_core_call_client_sip_call_transfer(struct DailyRawCallClient *client,
+                                              uint64_t request_id,
+                                              const char *properties);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Transfer a SIP dial-in call to another SIP endpoint outside Daily.
+ */
+void daily_core_call_client_sip_refer(struct DailyRawCallClient *client,
+                                      uint64_t request_id,
+                                      const char *properties);
+#endif
+
+#if !defined(WASM32)
 struct DailyCallClientSubscriptionsFns daily_core_call_client_subscriptions_fns(void);
 #endif
 
@@ -1213,6 +1333,16 @@ void daily_core_call_client_start_transcription(struct DailyRawCallClient *clien
  */
 void daily_core_call_client_stop_transcription(struct DailyRawCallClient *client,
                                                uint64_t request_id);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Update a transcription
+ */
+void daily_core_call_client_update_transcription(struct DailyRawCallClient *client,
+                                                 uint64_t request_id,
+                                                 const char *participants,
+                                                 const char *instance_id);
 #endif
 
 #if !defined(WASM32)
@@ -1326,7 +1456,69 @@ void daily_core_context_destroy(void);
  * [daily_core_context_create_virtual_microphone_device] or
  * [daily_core_context_create_virtual_speaker_device].
  */
-NativeDeviceManager *daily_core_context_create_device_manager(void);
+DailyDeviceManager *daily_core_context_create_device_manager(void);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Creates a custom audio source, which makes it possible to send audio frames.
+ */
+DailyAudioSource *daily_core_context_create_custom_audio_source(void);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Writes audio frames to a custom audio source created with
+ * [daily_core_context_create_custom_audio_source]. This function is
+ * non-blocking.
+ */
+void daily_core_context_custom_audio_source_write_frames(DailyAudioSource *daily_audio_source,
+                                                         const void *audio_data,
+                                                         int32_t bits_per_sample,
+                                                         int32_t sample_rate,
+                                                         uintptr_t number_of_channels,
+                                                         uintptr_t num_frames);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Writes audio frames to a custom audio source created with
+ * [daily_core_context_create_custom_audio_source]. This function blocks until
+ * the audio frames have been written.
+ */
+int32_t daily_core_context_custom_audio_source_write_frames_sync(DailyAudioSource *daily_audio_source,
+                                                                 const void *audio_data,
+                                                                 int32_t bits_per_sample,
+                                                                 int32_t sample_rate,
+                                                                 uintptr_t number_of_channels,
+                                                                 uintptr_t num_frames);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Writes audio frames to a custom audio source created with
+ * [daily_core_context_create_custom_audio_source]. This function is
+ * non-blocking and the provided `callback` will be called when the audio
+ * frames have been written.
+ */
+int32_t daily_core_context_custom_audio_source_write_frames_async(DailyAudioSource *daily_audio_source,
+                                                                  const void *audio_data,
+                                                                  int32_t bits_per_sample,
+                                                                  int32_t sample_rate,
+                                                                  uintptr_t number_of_channels,
+                                                                  uintptr_t num_frames,
+                                                                  uint64_t request_id,
+                                                                  DailyAudioSenderOnWriteFramesFn callback,
+                                                                  DailyRawAudioSenderDelegate *callback_target);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Creates a custom audio track. Custom audio tracks need a custom audio source
+ * to write audio frames. Custom audio sources can be created with
+ * [daily_core_context_create_custom_audio_source].
+ */
+const DailyAudioTrack *daily_core_context_create_custom_audio_track(DailyAudioSource *audio_source);
 #endif
 
 #if !defined(WASM32)
@@ -1338,7 +1530,7 @@ NativeDeviceManager *daily_core_context_create_device_manager(void);
  * `create_audio_device_module` callback passed to
  * [daily_core_context_create].
  */
-WebrtcAudioDeviceModule *daily_core_context_create_audio_device_module(NativeDeviceManager *device_manager,
+WebrtcAudioDeviceModule *daily_core_context_create_audio_device_module(DailyDeviceManager *device_manager,
                                                                        WebrtcTaskQueueFactory *task_queue_factory);
 #endif
 
@@ -1346,7 +1538,7 @@ WebrtcAudioDeviceModule *daily_core_context_create_audio_device_module(NativeDev
 /**
  * Implements enumeratedDevices for a previously created device manager.
  */
-char *daily_core_context_device_manager_enumerated_devices(const NativeDeviceManager *device_manager);
+char *daily_core_context_device_manager_enumerated_devices(const DailyDeviceManager *device_manager);
 #endif
 
 #if !defined(WASM32)
@@ -1358,7 +1550,7 @@ char *daily_core_context_device_manager_enumerated_devices(const NativeDeviceMan
  * device name can then be used as a `deviceId` in the microphone settings when
  * specifying the inputs.
  */
-WebrtcMediaStream *daily_core_context_device_manager_get_user_media(NativeDeviceManager *device_manager,
+WebrtcMediaStream *daily_core_context_device_manager_get_user_media(DailyDeviceManager *device_manager,
                                                                     WebrtcPeerConnectionFactory *peer_connection_factory,
                                                                     WebrtcThread *signaling_thread,
                                                                     WebrtcThread *worker_thread,
@@ -1376,11 +1568,11 @@ WebrtcMediaStream *daily_core_context_device_manager_get_user_media(NativeDevice
  * internally frames are converted to I420 so the color format is used to know
  * what type of conversion needs to be applied.
  */
-NativeVirtualCameraDevice *daily_core_context_create_virtual_camera_device(NativeDeviceManager *device_manager,
-                                                                           const char *device_name,
-                                                                           uint32_t width,
-                                                                           uint32_t height,
-                                                                           const char *color_format);
+DailyVirtualCameraDevice *daily_core_context_create_virtual_camera_device(DailyDeviceManager *device_manager,
+                                                                          const char *device_name,
+                                                                          uint32_t width,
+                                                                          uint32_t height,
+                                                                          const char *color_format);
 #endif
 
 #if !defined(WASM32)
@@ -1390,7 +1582,7 @@ NativeVirtualCameraDevice *daily_core_context_create_virtual_camera_device(Nativ
  * resolution (width and height) and color format needs to match the one
  * specified by the camema.
  */
-void daily_core_context_virtual_camera_device_write_frame(NativeVirtualCameraDevice *device,
+void daily_core_context_virtual_camera_device_write_frame(DailyVirtualCameraDevice *device,
                                                           const uint8_t *frame,
                                                           uintptr_t size);
 #endif
@@ -1404,7 +1596,7 @@ void daily_core_context_virtual_camera_device_write_frame(NativeVirtualCameraDev
  * A virtual speaker device can be used to receive audio samples from the
  * meeting.
  */
-DailyVirtualSpeakerDevice *daily_core_context_create_virtual_speaker_device(NativeDeviceManager *device_manager,
+DailyVirtualSpeakerDevice *daily_core_context_create_virtual_speaker_device(DailyDeviceManager *device_manager,
                                                                             const char *device_name,
                                                                             uint32_t sample_rate,
                                                                             uint8_t channels,
@@ -1420,7 +1612,7 @@ DailyVirtualSpeakerDevice *daily_core_context_create_virtual_speaker_device(Nati
  * A virtual microphone device can be used to send audio samples to the
  * meeting.
  */
-DailyVirtualMicrophoneDevice *daily_core_context_create_virtual_microphone_device(NativeDeviceManager *device_manager,
+DailyVirtualMicrophoneDevice *daily_core_context_create_virtual_microphone_device(DailyDeviceManager *device_manager,
                                                                                   const char *device_name,
                                                                                   uint32_t sample_rate,
                                                                                   uint8_t channels,
@@ -1433,7 +1625,7 @@ DailyVirtualMicrophoneDevice *daily_core_context_create_virtual_microphone_devic
  * can be a system or a virtual speaker. Returns true if the device was
  * selected properly, false otherwise.
  */
-bool daily_core_context_select_speaker_device(NativeDeviceManager *device_manager,
+bool daily_core_context_select_speaker_device(DailyDeviceManager *device_manager,
                                               const char *device_name);
 #endif
 
@@ -1442,7 +1634,7 @@ bool daily_core_context_select_speaker_device(NativeDeviceManager *device_manage
  * Returns the current selected speaker device or NULL if no device is selected
  * yet.
  */
-DailyVirtualSpeakerDevice *daily_core_context_get_selected_speaker_device(const NativeDeviceManager *device_manager);
+DailyVirtualSpeakerDevice *daily_core_context_get_selected_speaker_device(const DailyDeviceManager *device_manager);
 #endif
 
 #if !defined(WASM32)
@@ -1450,7 +1642,7 @@ DailyVirtualSpeakerDevice *daily_core_context_get_selected_speaker_device(const 
  * Returns the current selected microphone device or NULL if no device is
  * selected yet.
  */
-DailyVirtualMicrophoneDevice *daily_core_context_get_selected_microphone_device(const NativeDeviceManager *device_manager);
+DailyVirtualMicrophoneDevice *daily_core_context_get_selected_microphone_device(const DailyDeviceManager *device_manager);
 #endif
 
 #if !defined(WASM32)
@@ -1463,8 +1655,8 @@ int32_t daily_core_context_virtual_speaker_device_read_frames(DailyVirtualSpeake
                                                               int16_t *frames,
                                                               uintptr_t num_frames,
                                                               uint64_t request_id,
-                                                              NativeVirtualSpeakerDeviceOnReadFramesFn callback,
-                                                              NativeRawVirtualSpeakerDeviceDelegate *callback_target);
+                                                              DailyVirtualSpeakerDeviceOnReadFramesFn callback,
+                                                              DailyRawVirtualSpeakerDeviceDelegate *callback_target);
 #endif
 
 #if !defined(WASM32)
@@ -1477,17 +1669,17 @@ int32_t daily_core_context_virtual_microphone_device_write_frames(DailyVirtualMi
                                                                   const int16_t *frames,
                                                                   uintptr_t num_frames,
                                                                   uint64_t request_id,
-                                                                  NativeVirtualMicrophoneDeviceOnWriteFramesFn callback,
-                                                                  NativeRawVirtualMicrophoneDeviceDelegate *callback_target);
+                                                                  DailyAudioSenderOnWriteFramesFn callback,
+                                                                  DailyRawAudioSenderDelegate *callback_target);
 #endif
 
 #if !defined(WASM32)
 /**
  * Creates a native VAD analyzer. VADs are used to detect speech.
  */
-NativeVad *daily_core_context_create_vad(uint32_t reset_period_ms,
-                                         uint32_t sample_rate,
-                                         uint8_t channels);
+DailyVad *daily_core_context_create_vad(uint32_t reset_period_ms,
+                                        uint32_t sample_rate,
+                                        uint8_t channels);
 #endif
 
 #if !defined(WASM32)
@@ -1495,7 +1687,7 @@ NativeVad *daily_core_context_create_vad(uint32_t reset_period_ms,
  * Use VAD to analyze 10ms of audio frames. If more than 10ms of audio frames
  * are given, only the first 10ms will be used.
  */
-float daily_core_context_vad_analyze(NativeVad *vad, const int16_t *frames, uintptr_t num_frames);
+float daily_core_context_vad_analyze(DailyVad *vad, const int16_t *frames, uintptr_t num_frames);
 #endif
 
 #if !defined(WASM32)

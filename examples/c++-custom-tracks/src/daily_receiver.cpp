@@ -21,7 +21,7 @@
 #define SLEEP_MS(ms) usleep((ms) * 1000)
 #endif
 
-static const char* DEFAULT_CLIENT_NAME = "Guest";
+static const char* DEFAULT_CLIENT_NAME = "Receiver";
 
 // NOTE: Do not modify. This is a way for the server to recognize a known
 // client library.
@@ -47,6 +47,39 @@ static void on_participant_joined(
 
     std::cout << std::endl
               << "Participant joined " << participant_id << std::endl;
+
+    // Only check custom track for first participant.
+    if (!data->first_participant_joined) {
+        std::cout << std::endl
+                  << "Receiving and mirroring custom track 'cxx-wave' to "
+                     "'cxx-wave-mirror' ..."
+                  << std::endl;
+
+        // Update subscriptions
+        nlohmann::json media = nlohmann::json::parse(R"({
+          "media": {
+            "customAudio": {
+              "cxx-wave": "subscribed"
+            }
+          }
+        })");
+        nlohmann::json subscriptions;
+        subscriptions[participant_id] = media;
+
+        daily_core_call_client_update_subscriptions(
+                data->client,
+                data->request_id++,
+                subscriptions.dump().c_str(),
+                nullptr
+        );
+        daily_core_call_client_set_participant_audio_renderer(
+                data->client,
+                data->request_id++,
+                0,
+                participant_id.c_str(),
+                "cxx-wave"
+        );
+    }
 
     data->first_participant_joined = true;
 }
@@ -92,6 +125,25 @@ static void event_listener(
     default:
         break;
     }
+}
+
+static void custom_audio_track_listener(
+        DailyRawCallClientDelegate* delegate,
+        uint64_t renderer_id,
+        const char* peer_id,
+        const struct DailyAudioData* audio_data
+) {
+    auto app_data = static_cast<DailyExampleData*>(delegate);
+
+    // Mirror to a custom track.
+    daily_core_context_custom_audio_source_write_frames_sync(
+            app_data->custom_audio_source,
+            audio_data->audio_frames,
+            audio_data->bits_per_sample,
+            audio_data->sample_rate,
+            audio_data->num_channels,
+            audio_data->num_audio_frames
+    );
 }
 
 static WebrtcAudioDeviceModule* create_audio_device_module_cb(
@@ -170,25 +222,6 @@ static DailyWebRtcContextDelegate webrtc_context_delegate() {
     return webrtc;
 }
 
-static void mirror_audio_thread_handler(void* args) {
-    DailyExampleData* data = static_cast<DailyExampleData*>(args);
-    std::cout << std::endl
-              << "Waiting for participants to join..." << std::endl;
-    while (running) {
-        if (data->first_participant_joined) {
-            int16_t frames[320];  // 320 = 16000 / 100 * 2 bytes * 1 channels
-            daily_core_context_virtual_speaker_device_read_frames(
-                    data->speaker, frames, 160, 0, nullptr, nullptr
-            );
-            daily_core_context_virtual_microphone_device_write_frames(
-                    data->microphone, frames, 160, 0, nullptr, nullptr
-            );
-        } else {
-            SLEEP_MS(10);
-        }
-    }
-}
-
 static void signal_handler(int signum) {
     std::cout << std::endl;
     std::cout << "Interrupted!" << std::endl;
@@ -197,7 +230,7 @@ static void signal_handler(int signum) {
 }
 
 static void usage() {
-    std::cout << "Usage: daily_example -m MEETING_URL [-t MEETING_TOKEN] -n "
+    std::cout << "Usage: daily_receiver -m MEETING_URL [-t MEETING_TOKEN] -n "
                  "CLIENT_NAME"
               << std::endl;
     std::cout << "  -m    Daily meeting URL" << std::endl;
@@ -241,29 +274,20 @@ int main(int argc, char* argv[]) {
 
     DailyExampleData* app_data = (DailyExampleData*)webrtc.ptr;
 
-    DailyVirtualSpeakerDevice* speaker =
-            daily_core_context_create_virtual_speaker_device(
-                    app_data->device_manager, "speaker", 16000, 1, false
-            );
-    daily_core_context_select_speaker_device(
-            app_data->device_manager, "speaker"
-    );
-
-    DailyVirtualMicrophoneDevice* microphone =
-            daily_core_context_create_virtual_microphone_device(
-                    app_data->device_manager, "mic", 16000, 1, false
-            );
+    DailyAudioSource* audio_source =
+            daily_core_context_create_custom_audio_source();
 
     DailyRawCallClient* client = daily_core_call_client_create();
 
     // Update the WebRTC context.
     app_data->client = client;
-    app_data->speaker = speaker;
-    app_data->microphone = microphone;
+    app_data->custom_audio_source = audio_source;
     app_data->client_name = std::string(client_name);
 
     DailyCallClientDelegate delegate = {
-            .ptr = app_data, .fns = {.on_event = event_listener}
+            .ptr = app_data,
+            .fns = {.on_event = event_listener,
+                    .on_audio_data = custom_audio_track_listener}
     };
 
     // Setup delegate. This will handle events from the library.
@@ -273,7 +297,7 @@ int main(int argc, char* argv[]) {
     nlohmann::json profiles = nlohmann::json::parse(R"({
       "base": {
         "camera": "unsubscribed",
-        "microphone": "subscribed"
+        "microphone": "unsubscribed"
       }
     })");
 
@@ -285,11 +309,11 @@ int main(int argc, char* argv[]) {
     nlohmann::json settings = nlohmann::json::parse(R"({
       "inputs": {
         "camera": false,
-        "microphone": {
-          "isEnabled": true,
-          "settings": {
-            "deviceId": "mic"
-          }
+        "microphone": false
+      },
+      "publishing": {
+        "customAudio": {
+          "cxx-wave-mirror": true
         }
       }
     })");
@@ -298,6 +322,15 @@ int main(int argc, char* argv[]) {
             app_data->client,
             app_data->request_id++,
             app_data->client_name.c_str()
+    );
+
+    // We will be mirroring audio from remote participant microphone to a custom
+    // track "cxx-mirror".
+    const DailyAudioTrack* audio_track =
+            daily_core_context_create_custom_audio_track(audio_source);
+
+    daily_core_call_client_add_custom_audio_track(
+            client, app_data->request_id++, "cxx-wave-mirror", audio_track
     );
 
     std::cout << std::endl << "Joining " << url << std::endl;
@@ -309,11 +342,12 @@ int main(int argc, char* argv[]) {
             settings.dump().c_str()
     );
 
-    // Create audio mirror thread.
-    std::thread mirror_thread(mirror_audio_thread_handler, app_data);
-
-    // Wait for mirror thread to finish.
-    mirror_thread.join();
+    // Wait for participants to join.
+    std::cout << std::endl
+              << "Waiting for participants to join..." << std::endl;
+    while (running) {
+        SLEEP_MS(1000);
+    }
 
     // Store the leave request id so we can detect when it finishes in the event
     // handler.

@@ -15,13 +15,12 @@ extern "C" {
 struct DailyExampleData {
     DailyRawCallClient* client;
     DailyDeviceManager* device_manager;
-    DailyVirtualSpeakerDevice* speaker;
-    DailyVirtualMicrophoneDevice* microphone;
+    DailyAudioSource* custom_audio_source;
 
     uint64_t request_id;
     uint64_t leave_request_id;
-    std::string client_name;
     bool first_participant_joined;
+    std::string client_name;
 };
 
 #endif
