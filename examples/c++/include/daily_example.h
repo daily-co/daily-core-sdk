@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024, Daily
+// Copyright (c) 2024-2025 Daily
 //
 
 #ifndef DAILY_EXAMPLE_H
@@ -14,7 +14,7 @@ extern "C" {
 // Random grab-bag of application state for the purpose of the example.
 struct DailyExampleData {
     DailyRawCallClient* client;
-    NativeDeviceManager* device_manager;
+    DailyDeviceManager* device_manager;
     DailyVirtualSpeakerDevice* speaker;
     DailyVirtualMicrophoneDevice* microphone;
 

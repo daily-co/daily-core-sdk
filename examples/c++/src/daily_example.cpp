@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2024, Daily
+// Copyright (c) 2024-2025 Daily
 //
 
 #include "daily_example.h"
@@ -27,7 +27,7 @@ static const char* DEFAULT_CLIENT_NAME = "Guest";
 // client library.
 static DailyAboutClient about_client = {
         .library = "daily-core-sdk",
-        .version = "0.10.1"
+        .version = "0.18.0"
 };
 
 static std::atomic<bool> running = true;
@@ -43,24 +43,20 @@ static void on_participant_joined(
         const nlohmann::json& participant,
         DailyExampleData* data
 ) {
-    std::string user_id = participant["id"].get<std::string>();
-    std::string user_name = participant["info"]["userName"].get<std::string>();
+    std::string participant_id = participant["id"].get<std::string>();
 
     std::cout << std::endl
-              << "Participant joined: " << user_name << " (" << user_id << ")"
-              << std::endl;
+              << "Participant joined " << participant_id << std::endl;
 
     data->first_participant_joined = true;
 }
 
 static void
 on_participant_left(const nlohmann::json& participant, DailyExampleData* data) {
-    std::string user_id = participant["id"].get<std::string>();
-    std::string user_name = participant["info"]["userName"].get<std::string>();
+    std::string participant_id = participant["id"].get<std::string>();
 
     std::cout << std::endl
-              << "Participant left: " << user_name << " (" << user_id << ")"
-              << std::endl;
+              << "Participant left " << participant_id << std::endl;
 }
 
 static void event_listener(
@@ -154,7 +150,7 @@ static DailyContextDelegate context_delegate() {
 }
 
 static DailyWebRtcContextDelegate webrtc_context_delegate() {
-    NativeDeviceManager* device_manager =
+    DailyDeviceManager* device_manager =
             daily_core_context_create_device_manager();
 
     DailyExampleData* data = new DailyExampleData;
@@ -201,12 +197,13 @@ static void signal_handler(int signum) {
 }
 
 static void usage() {
-    std::cout << "Usage: daily-example -m MEETING_URL [-t MEETING_TOKEN] -n "
+    std::cout << "Usage: daily_example -m MEETING_URL [-t MEETING_TOKEN] -n "
                  "CLIENT_NAME"
               << std::endl;
     std::cout << "  -m    Daily meeting URL" << std::endl;
     std::cout << "  -t    Daily meeting token" << std::endl;
-    std::cout << "  -n    This client's name (default: Guest)" << std::endl;
+    std::cout << "  -n    This client's name (default: " << DEFAULT_CLIENT_NAME
+              << ")" << std::endl;
 }
 
 int main(int argc, char* argv[]) {
