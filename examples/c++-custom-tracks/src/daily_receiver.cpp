@@ -349,6 +349,10 @@ int main(int argc, char* argv[]) {
         SLEEP_MS(1000);
     }
 
+    daily_core_call_client_remove_custom_audio_track(
+            client, app_data->request_id++, "cxx-wave-mirror"
+    );
+
     // Store the leave request id so we can detect when it finishes in the event
     // handler.
     app_data->leave_request_id = app_data->request_id++;

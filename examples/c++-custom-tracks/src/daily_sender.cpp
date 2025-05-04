@@ -325,6 +325,10 @@ int main(int argc, char* argv[]) {
     // Wait for wave audio thread to finish.
     wave_thread.join();
 
+    daily_core_call_client_remove_custom_audio_track(
+            client, app_data->request_id++, "cxx-wave"
+    );
+
     // Store the leave request id so we can detect when it finishes in the event
     // handler.
     app_data->leave_request_id = app_data->request_id++;
