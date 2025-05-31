@@ -29,7 +29,7 @@ static const char* DEFAULT_CLIENT_NAME = "Sender";
 // client library.
 static DailyAboutClient about_client = {
         .library = "daily-core-sdk",
-        .version = "0.18.0"
+        .version = "0.19.0"
 };
 
 static std::atomic<bool> running = true;

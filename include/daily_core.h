@@ -660,10 +660,6 @@ typedef struct DailyAboutClient {
 #endif
 
 #if !defined(WASM32)
-typedef void DailyDeviceManager;
-#endif
-
-#if !defined(WASM32)
 typedef void DailyAudioSource;
 #endif
 
@@ -679,6 +675,10 @@ typedef void (*DailyAudioSenderOnWriteFramesFn)(DailyRawAudioSenderDelegate *del
 
 #if !defined(WASM32)
 typedef void DailyAudioTrack;
+#endif
+
+#if !defined(WASM32)
+typedef void DailyDeviceManager;
 #endif
 
 #if !defined(WASM32)
@@ -1161,7 +1161,8 @@ void daily_core_call_client_set_participant_audio_renderer(struct DailyRawCallCl
                                                            uint64_t request_id,
                                                            uint64_t renderer_id,
                                                            const char *participant_id,
-                                                           const char *audio_source);
+                                                           const char *audio_source,
+                                                           uint32_t sample_rate);
 #endif
 
 #if !defined(WASM32)
@@ -1397,7 +1398,7 @@ WebrtcThread *daily_core_context_signaling_thread(void);
 
 #if !defined(WASM32)
 /**
- * Returns a borrowed pointer to the WebRTC `PeerConnectionFactory`.
+ * Converts a string containing a pointer value into a track pointer.
  */
 void *daily_core_context_track_retained(const char *id_ptr);
 #endif
@@ -1446,17 +1447,6 @@ void daily_core_context_create_with_threads(struct DailyContextDelegate delegate
  * termination and/or after the last call-client has been destroyed (if desirable).
  */
 void daily_core_context_destroy(void);
-#endif
-
-#if !defined(WASM32)
-/**
- * Creates a device manager. The device manager can handle system and virtual
- * devices. New virtual devices can be added with
- * [daily_core_context_create_virtual_camera_device],
- * [daily_core_context_create_virtual_microphone_device] or
- * [daily_core_context_create_virtual_speaker_device].
- */
-DailyDeviceManager *daily_core_context_create_device_manager(void);
 #endif
 
 #if !defined(WASM32)
@@ -1517,8 +1507,36 @@ int32_t daily_core_context_custom_audio_source_write_frames_async(DailyAudioSour
  * Creates a custom audio track. Custom audio tracks need a custom audio source
  * to write audio frames. Custom audio sources can be created with
  * [daily_core_context_create_custom_audio_source].
+ *
+ * Custom audio tracks can be used to send additional custom tracks or as the
+ * main microphone track.
  */
 const DailyAudioTrack *daily_core_context_create_custom_audio_track(DailyAudioSource *audio_source);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Destroys a custom audio track.
+ */
+void daily_core_context_destroy_custom_audio_track(DailyAudioTrack *audio_track);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Returns the id of the given audio track.
+ */
+const char *daily_core_context_custom_audio_track_id(DailyAudioTrack *audio_track);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Creates a device manager. The device manager can handle system and virtual
+ * devices. New virtual devices can be added with
+ * [daily_core_context_create_virtual_camera_device],
+ * [daily_core_context_create_virtual_microphone_device] or
+ * [daily_core_context_create_virtual_speaker_device].
+ */
+DailyDeviceManager *daily_core_context_create_device_manager(void);
 #endif
 
 #if !defined(WASM32)
@@ -1546,9 +1564,9 @@ char *daily_core_context_device_manager_enumerated_devices(const DailyDeviceMana
  * Implements getUserMedia for a previously created device manager. It is meant
  * to be used for system and virtual devices. For example, a new virtual
  * microphone device can be created via
- * [daily_core_context_create_microphone_device] with a given device name. That
- * device name can then be used as a `deviceId` in the microphone settings when
- * specifying the inputs.
+ * [daily_core_context_create_virtual_microphone_device] with a given device
+ * name. That device name can then be used as a `deviceId` in the microphone
+ * settings when specifying the inputs.
  */
 WebrtcMediaStream *daily_core_context_device_manager_get_user_media(DailyDeviceManager *device_manager,
                                                                     WebrtcPeerConnectionFactory *peer_connection_factory,
@@ -1589,12 +1607,15 @@ void daily_core_context_virtual_camera_device_write_frame(DailyVirtualCameraDevi
 
 #if !defined(WASM32)
 /**
- * Creates a virtual speaker device. This device will only be created if an
- * audio device module has been previously created with
- * [daily_core_context_create_audio_device_module].
+ * Creates a virtual speaker device. A virtual speaker device can be used to
+ * receive audio from the meeting. If you need to capture audio from individual
+ * participants use [daily_core_call_client_set_participant_audio_renderer].
  *
- * A virtual speaker device can be used to receive audio samples from the
- * meeting.
+ * Virtual speaker devices emulate a hardware device and have the limitation
+ * that only one speaker can be active per process.
+ *
+ * This device will only be created if an audio device module has been
+ * previously created with [daily_core_context_create_audio_device_module].
  */
 DailyVirtualSpeakerDevice *daily_core_context_create_virtual_speaker_device(DailyDeviceManager *device_manager,
                                                                             const char *device_name,
@@ -1605,12 +1626,16 @@ DailyVirtualSpeakerDevice *daily_core_context_create_virtual_speaker_device(Dail
 
 #if !defined(WASM32)
 /**
- * Creates a virtual microphone device. This device will only be created if an
- * audio device module has been previously created with
- * [daily_core_context_create_audio_device_module].
+ * Creates a virtual microphone device. A virtual microphone device can be used
+ * to send audio samples to the meeting.
  *
- * A virtual microphone device can be used to send audio samples to the
- * meeting.
+ * Virtual microphone devices emulate a hardware device and have the limitation
+ * that only one microphone can be active per process. However, it is possible
+ * to use a custom microphone audio track when specifying the call client input
+ * settings.
+ *
+ * This device will only be created if an audio device module has been
+ * previously created with [daily_core_context_create_audio_device_module].
  */
 DailyVirtualMicrophoneDevice *daily_core_context_create_virtual_microphone_device(DailyDeviceManager *device_manager,
                                                                                   const char *device_name,

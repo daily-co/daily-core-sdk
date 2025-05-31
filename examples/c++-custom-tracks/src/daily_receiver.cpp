@@ -27,7 +27,7 @@ static const char* DEFAULT_CLIENT_NAME = "Receiver";
 // client library.
 static DailyAboutClient about_client = {
         .library = "daily-core-sdk",
-        .version = "0.18.0"
+        .version = "0.19.0"
 };
 
 static std::atomic<bool> running = true;
@@ -77,7 +77,8 @@ static void on_participant_joined(
                 data->request_id++,
                 0,
                 participant_id.c_str(),
-                "cxx-wave"
+                "cxx-wave",
+                16000
         );
     }
 
@@ -136,7 +137,7 @@ static void custom_audio_track_listener(
     auto app_data = static_cast<DailyExampleData*>(delegate);
 
     // Mirror to a custom track.
-    daily_core_context_custom_audio_source_write_frames_sync(
+    daily_core_context_custom_audio_source_write_frames(
             app_data->custom_audio_source,
             audio_data->audio_frames,
             audio_data->bits_per_sample,
