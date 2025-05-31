@@ -5,6 +5,30 @@ All notable changes to **daily-core-sdk** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.0] - 2025-05-23
+
+### Added
+
+- It is now possible to create an audio track with
+  `daily_core_context_create_custom_audio_track()` and assign it as your track
+  microphone.
+
+- Added support for `daily_core_call_client_start_dialout()` new fields:
+  `displayName`, `userId`, `video`, `codecs`, and `permissions`.
+
+### Changed
+
+- ⚠️ `daily_core_call_client_set_participant_audio_renderer()` has a new argument
+  to specify the desired sample rate.
+
+- System certificates are now loaded on macOS, Linux and Windows platforms
+  instead of the embedded Mozilla's root certificates.
+
+### Fixed
+
+- Fixed an issue that would cause a blocking virtual microphone to not send any
+  audio in some cases.
+
 ## [0.18.1] - 2025-05-02
 
 ### Fixed
