@@ -331,7 +331,11 @@ int main(int argc, char* argv[]) {
             daily_core_context_create_custom_audio_track(audio_source);
 
     daily_core_call_client_add_custom_audio_track(
-            client, app_data->request_id++, "cxx-wave-mirror", audio_track
+            client,
+            app_data->request_id++,
+            "cxx-wave-mirror",
+            audio_track,
+            false
     );
 
     std::cout << std::endl << "Joining " << url << std::endl;
