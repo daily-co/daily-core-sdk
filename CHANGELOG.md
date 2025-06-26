@@ -5,6 +5,15 @@ All notable changes to **daily-core-sdk** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.3] - 2025-06-17
+
+### Changed
+
+- ⚠️ Added argument `ignore_audio_level` to
+  `daily_core_call_client_add_custom_audio_track()` and
+  `daily_core_call_client_update_custom_audio_track()` to be able to ignore
+  custom tracks' audio level.
+
 ## [0.19.2] - 2025-06-09
 
 ### Fixed
