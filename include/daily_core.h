@@ -171,11 +171,13 @@ typedef struct DailyCallClientInputsFns {
   void (*add_custom_audio_track)(struct DailyRawCallClient *client,
                                  uint64_t request_id,
                                  const char *name,
-                                 const void *track_ptr);
+                                 const void *track_ptr,
+                                 int32_t ignore_audio_level);
   void (*update_custom_audio_track)(struct DailyRawCallClient *client,
                                     uint64_t request_id,
                                     const char *name,
-                                    const void *track_ptr);
+                                    const void *track_ptr,
+                                    int32_t ignore_audio_level);
   void (*remove_custom_audio_track)(struct DailyRawCallClient *client,
                                     uint64_t request_id,
                                     const char *name);
@@ -993,7 +995,8 @@ void daily_core_call_client_remove_custom_video_track(struct DailyRawCallClient 
 void daily_core_call_client_add_custom_audio_track(struct DailyRawCallClient *client,
                                                    uint64_t request_id,
                                                    const char *name,
-                                                   const void *track_ptr);
+                                                   const void *track_ptr,
+                                                   int32_t ignore_audio_level);
 #endif
 
 #if !defined(WASM32)
@@ -1006,7 +1009,8 @@ void daily_core_call_client_add_custom_audio_track(struct DailyRawCallClient *cl
 void daily_core_call_client_update_custom_audio_track(struct DailyRawCallClient *client,
                                                       uint64_t request_id,
                                                       const char *name,
-                                                      const void *track_ptr);
+                                                      const void *track_ptr,
+                                                      int32_t ignore_audio_level);
 #endif
 
 #if !defined(WASM32)
