@@ -5,6 +5,37 @@ All notable changes to **daily-core-sdk** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.0] - 2025-10-16
+
+### Added
+
+- Added `callerId` field to `daily_core_call_client_sip_call_transfer()`
+  properties.
+
+- Added `daily_core_context_create_custom_audio_source_with_silence(sample_rate,
+  channels)` to create a custom audio source with a predefined sample rate and
+  number of channels that sends silence audio when no audio frames are being
+  written to the audio source.
+
+- Added `daily_core_set_log_level(log_level)`. The available log levels are:
+  `DailyLogLevel_Off`, `DailyLogLevel_Error`, `DailyLogLevel_Warn`,
+  `DailyLogLevel_Info`, `DailyLogLevel_Debug`, `DailyLogLevel_Trace`.
+
+### Fixed
+
+- Fixed an issue that could cause a segmentation fault when switching or
+  stopping the network while using custom audio sources.
+
+- Fixed an issue where custom audio tracks won't send silence from the very
+  beginning. This is necessary to avoid issues with browsers that expect RTP
+  packets from the start.
+
+- Fixed an issue where the application could keep attempting to send messages
+  after the signaling channel was closed preventing the application to finish.
+
+- Fixed a race condition that would cause audio to never be processed when
+  received.
+
 ## [0.19.3] - 2025-06-17
 
 ### Changed
