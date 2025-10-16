@@ -564,7 +564,7 @@ typedef const char *(*DailyWebRtcContextDelegateGetAudioDeviceFn)(DailyRawWebRtc
  * Platform-provided implementation of `setAudioDevice`.
  */
 typedef void (*DailyWebRtcContextDelegateSetAudioDeviceFn)(DailyRawWebRtcContextDelegate *delegate,
-                                                           const char *deviceId);
+                                                           const char *device_id);
 #endif
 
 #if !defined(WASM32)
@@ -1458,6 +1458,16 @@ void daily_core_context_destroy(void);
  * Creates a custom audio source, which makes it possible to send audio frames.
  */
 DailyAudioSource *daily_core_context_create_custom_audio_source(void);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Creates a custom audio source for the given sample rate and number of
+ * channels. This audio source sends silence while the user is not writing any
+ * audio frames.
+ */
+DailyAudioSource *daily_core_context_create_custom_audio_source_with_silence(int32_t sample_rate,
+                                                                             uintptr_t number_of_channels);
 #endif
 
 #if !defined(WASM32)
