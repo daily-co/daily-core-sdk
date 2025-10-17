@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2024, Daily
+# Copyright (c) 2024-2025, Daily
 #
 
 cmake_minimum_required(VERSION 3.16)
@@ -113,6 +113,7 @@ if(MSVC)
     iphlpapi
     ole32
     secur32
+    crypt32
     winmm
     ws2_32
     strmiids
@@ -124,5 +125,6 @@ if(MSVC)
     ntdll
     userenv
     bcrypt
+    ncrypt
   )
 endif()

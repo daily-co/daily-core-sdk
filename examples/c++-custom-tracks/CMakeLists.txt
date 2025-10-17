@@ -149,6 +149,7 @@ if(MSVC)
     iphlpapi
     ole32
     secur32
+    crypt32
     winmm
     ws2_32
     strmiids
@@ -160,6 +161,7 @@ if(MSVC)
     ntdll
     userenv
     bcrypt
+    ncrypt
   )
 
   target_link_libraries(daily_receiver
@@ -170,6 +172,7 @@ if(MSVC)
     iphlpapi
     ole32
     secur32
+    crypt32
     winmm
     ws2_32
     strmiids
@@ -181,5 +184,6 @@ if(MSVC)
     ntdll
     userenv
     bcrypt
+    ncrypt
   )
 endif()
