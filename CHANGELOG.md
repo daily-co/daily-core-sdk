@@ -5,7 +5,7 @@ All notable changes to **daily-core-sdk** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.20.0] - 2025-10-16
+## [0.20.0] - 2025-10-17
 
 ### Added
 
@@ -35,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed a race condition that would cause audio to never be processed when
   received.
+
+### Other
+
+- Link examples with `crypt32` and `ncrypt` libraries.
 
 ## [0.19.3] - 2025-06-17
 
