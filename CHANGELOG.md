@@ -5,6 +5,139 @@ All notable changes to **daily-core-sdk** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.21.0] - 2026-08-03
+
+### Added
+
+- Added automatic fallback to `dailywebrtc.com` and `dailywebrtc.net` when
+  `daily.co` authoritative nameservers are unreachable, improving connection
+  resilience.
+
+- Added support for `screenAudio` input. It is now possible to send a custom
+  screen-share audio track (alongside or independently of `screenVideo`) with:
+
+```
+{
+  "inputs": {
+      "screenAudio": {
+          "isEnabled": True,
+          "settings": {
+             "customTrack": {
+                 "id": "CUSTOM_TRACK_ID"
+             }
+          }
+      }
+  }
+}
+```
+
+- Added support for `screenVideo` custom tracks. It is now possible to send a
+  custom screen share track with:
+
+```
+{
+  "inputs": {
+      "screenVideo": {
+          "isEnabled": True,
+          "settings": {
+             "customTrack": {
+                 "id": "CUSTOM_TRACK_ID"
+             }
+          }
+      }
+  }
+}
+```
+
+- Added debug logs to HTTP requests.
+
+- Added support for `dtmf-event`.
+
+- Added `provider` field to dialout properties. Currently only supports `"daily"`.
+
+- Added `extension` and `waitBeforeExtensionDialSec` fields to dialout properties.
+
+- Added optional `method` field to send DTMF properties. Supported values are
+  `"sip-info"`, `"telephone-event"`, and `"auto"`.
+
+- Added optional `digitDurationMs` field to send DTMF properties.
+
+- It is now possible to create custom video tracks with
+  `daily_core_context_create_custom_video_track()`. The custom video tracks need
+  a custom video source which can be created with
+  `daily_core_context_create_custom_video_source()`. The track can then be added
+  to the call client with `daily_core_call_client_add_custom_video_track()`. You
+  can also update an existing custom track with a new video source with
+  `daily_core_call_client_update_custom_video_track()` or remove and existing
+  custom track with `daily_core_call_client_remove_custom_video_track`. Write
+  frames with `daily_core_context_custom_video_source_write_frame()`.
+
+- Added a `trackType` field to the `transcription-message` event to indicate
+  which track the transcription originated from.
+
+### Changed
+
+- Adaptive Bitrate (ABR) is now enabled by default for camera tracks. It can
+  still be disabled by setting `allow_adaptive_layers` to `False` in the camera
+  `send_settings`.
+
+- Increased start transcription and start dialout timeouts to 20 seconds.
+
+- `daily_core_call_client_start_dialout()` now returns two parameters when
+  completing: session ID and error. Previously, it only returned an error.
+
+- `daily_core_call_client_start_recording()` now returns two parameters when
+  completing: stream ID and error. Previously, it only return an error.
+
+### Fixed
+
+- Fixed a use-after-free that could cause a segmentation fault in the audio
+  playout thread (e.g. `daily-speaker-p`) if a `DailyRawCallClient` was released
+  while still in a call (i.e. without leaving first) and participant audio
+  renderers were registered.
+
+- Fixed a segmentation fault that could occur when a `DailyRawCallClient` was
+  released while still in a call, especially right before the application
+  exited: WebRTC internals are no longer torn down at process exit while SDK
+  threads may still be running.
+
+  Note that the recommended way to terminate a call is still to
+  `daily_core_call_client_leave()` (and wait for its completion) before calling
+  `release()`.
+
+- Fixed an issue where a room configured with `enable_recording` set to
+  `cloud-audio-only` was ignored when starting a recording, causing the
+  recording to also capture video.
+
+- Fixed an issue where `daily_core_call_client_start_recording()` null
+  properties were serialized to `null`.
+
+- Fixed a segmentation fault that could occur after virtual microphone or
+  speaker inputs or publishing updates.
+
+- Fixed panics in signalling reconnect paths when room lookup returns no worker.
+
+- Fixed support for cloud-audio-only recording type.
+
+- Avoid unnecessary signalling reconnection attempts when
+  `daily_core_call_client_leave()` is called during a network failure.
+
+- Fixed an issue that could cause a crash when leaving a room if a video or
+  audio renderer was active.
+
+- Fixed an issue where start recording, start transcription and start dialout
+  server error messages were ignored.
+
+### Performance
+
+- Added per-phase connection timing metrics for WebSocket signalling (DNS lookup,
+  TCP connect, TLS handshake, and WebSocket upgrade), complementing the existing
+  HTTP connection timings.
+
+- Replaced `ureq` HTTP client with `hyper` + `rustls` (ring backend). Includes
+  connection timeouts, TLS configuration reuse, and per-request timing metrics
+  for DNS lookup, TCP connect, and TLS handshake.
+
 ## [0.20.0] - 2025-10-17
 
 ### Added
