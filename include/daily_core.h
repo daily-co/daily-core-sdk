@@ -1,4 +1,4 @@
-/* Copyright (c) 2022-2025, Daily */
+/* Copyright (c) 2022-2026, Daily */
 
 #pragma once
 
@@ -680,6 +680,14 @@ typedef void DailyAudioTrack;
 #endif
 
 #if !defined(WASM32)
+typedef void DailyVideoSource;
+#endif
+
+#if !defined(WASM32)
+typedef void DailyVideoTrack;
+#endif
+
+#if !defined(WASM32)
 typedef void DailyDeviceManager;
 #endif
 
@@ -990,7 +998,7 @@ void daily_core_call_client_remove_custom_video_track(struct DailyRawCallClient 
  * Adds a custom audio track
  * # Safety
  * Will crash if the `name` parameter is not a valid pointer to a `const char
- * *` or if `track_ptr` is not a valid pointer to a audio media track.
+ * *` or if `track_ptr` is not a valid pointer to an audio media track.
  */
 void daily_core_call_client_add_custom_audio_track(struct DailyRawCallClient *client,
                                                    uint64_t request_id,
@@ -1004,7 +1012,7 @@ void daily_core_call_client_add_custom_audio_track(struct DailyRawCallClient *cl
  * Updates a custom audio track
  * # Safety
  * Will crash if the `name` parameter is not a valid pointer to a `const char
- * *` or if `track_ptr` is not a valid pointer to a audio media track.
+ * *` or if `track_ptr` is not a valid pointer to an audio media track.
  */
 void daily_core_call_client_update_custom_audio_track(struct DailyRawCallClient *client,
                                                       uint64_t request_id,
@@ -1537,9 +1545,52 @@ void daily_core_context_destroy_custom_audio_track(DailyAudioTrack *audio_track)
 
 #if !defined(WASM32)
 /**
+ * Creates a custom video source, which makes it possible to send video frames.
+ */
+DailyVideoSource *daily_core_context_create_custom_video_source(void);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Writes a video frame to a custom video source created with
+ * [daily_core_context_create_custom_video_source].
+ */
+void daily_core_context_custom_video_source_write_frame(DailyVideoSource *video_source,
+                                                        const uint8_t *frame,
+                                                        uintptr_t size,
+                                                        int32_t width,
+                                                        int32_t height,
+                                                        const char *color_format);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Creates a custom video track. Custom video tracks need a custom video source
+ * to write video frames. Custom video sources can be created with
+ * [daily_core_context_create_custom_video_source].
+ */
+const DailyVideoTrack *daily_core_context_create_custom_video_track(DailyVideoSource *video_source);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Destroys a custom video track.
+ */
+void daily_core_context_destroy_custom_video_track(DailyVideoTrack *video_track);
+#endif
+
+#if !defined(WASM32)
+/**
  * Returns the id of the given audio track.
  */
 const char *daily_core_context_custom_audio_track_id(DailyAudioTrack *audio_track);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Returns the id of the given video track.
+ */
+const char *daily_core_context_custom_video_track_id(DailyVideoTrack *video_track);
 #endif
 
 #if !defined(WASM32)
