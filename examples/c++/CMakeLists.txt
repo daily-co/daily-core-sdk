@@ -1,14 +1,16 @@
 #
-# Copyright (c) 2024-2025, Daily
+# Copyright (c) 2024-2026, Daily
 #
 
 cmake_minimum_required(VERSION 3.16)
 
-project(daily_example LANGUAGES CXX)
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+if(APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0" CACHE STRING "Minimum macOS deployment target")
+endif()
 
 if(MSVC)
   set(CMAKE_CXX_STANDARD 20)
@@ -17,6 +19,8 @@ else()
 endif()
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+project(daily_example LANGUAGES CXX)
 
 set(DAILY_EXAMPLE_SOURCES
   src/daily_example.cpp
@@ -75,10 +79,12 @@ if(APPLE)
   # The ones below are needed when linking with -ObjC
   find_library(APP_KIT AppKit)
   find_library(AVFOUNDATION AVFoundation)
+  find_library(IO_SURFACE IOSurface)
   find_library(METAL Metal)
   find_library(METAL_KIT MetalKit)
   find_library(OPENGL OpenGL)
   find_library(QUARTZ_CORE QuartzCore)
+  find_library(SCREEN_CAPTURE_KIT ScreenCaptureKit)
 
   target_link_libraries(daily_example
     PRIVATE
@@ -94,10 +100,12 @@ if(APPLE)
     -ObjC
     ${APP_KIT}
     ${AVFOUNDATION}
+    ${IO_SURFACE}
     ${METAL}
     ${METAL_KIT}
     ${OPENGL}
     ${QUARTZ_CORE}
+    ${SCREEN_CAPTURE_KIT}
   )
 endif()
 
