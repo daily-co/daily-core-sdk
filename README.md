@@ -20,7 +20,7 @@ It has:
 
 - `include/daily_core.h`: the C API.
 - `include/daily_core_version.h`: the SDK version, e.g. `DAILY_CORE_VERSION`
-  (`"0.22.0"`).
+  (`"0.23.0"`).
 - The shared library: `lib/libdaily_core.so` on Linux, `lib/libdaily_core.dylib`
   on macOS, and `bin/daily_core.dll` on Windows, which you link with
   `lib/daily_core.dll.lib`.
@@ -51,7 +51,7 @@ be compiled with `_ITERATOR_DEBUG_LEVEL=0`.
 Find the package and link to `DailyCore::DailyCore`, the shared library:
 
 ```cmake
-find_package(DailyCore 0.22 REQUIRED)
+find_package(DailyCore 0.23 REQUIRED)
 target_link_libraries(my_app PRIVATE DailyCore::DailyCore)
 ```
 

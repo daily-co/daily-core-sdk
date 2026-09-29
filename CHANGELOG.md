@@ -5,16 +5,33 @@ All notable changes to **daily-core-sdk** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.23.0] - 2026-09-29
 
 ### Added
 
+- Added `daily_core_string_free()` to free the strings returned by
+  `daily_core_*` functions, such as `daily_core_call_client_participants()` or
+  `daily_core_context_custom_audio_track_id()`. Before, there was no way to free
+  them, so they leaked.
+
+- Added support to automatically start transcription when joining a room if the
+  `auto_start_transcription` meeting token property is set, using the room's
+  `auto_transcription_settings`.
+
+- `DailyStartTranscriptionProperties` now accepts `participants` and
+  `instanceId`, matching the REST start-transcription schema, so
+  `auto_transcription_settings` that scope transcription to specific
+  participants or a named instance are honored.
+
+- Added candidate-pair round-trip time to call metrics, so latency is
+  measured consistently, including for receive-only participants.
+
 - Added `include/daily_core_version.h`, with the SDK version:
-  `DAILY_CORE_VERSION` (e.g. `"0.22.0"`), and `DAILY_CORE_VERSION_MAJOR`,
+  `DAILY_CORE_VERSION` (e.g. `"0.23.0"`), and `DAILY_CORE_VERSION_MAJOR`,
   `DAILY_CORE_VERSION_MINOR` and `DAILY_CORE_VERSION_PATCH`.
 
 - Added a CMake package. Point `CMAKE_PREFIX_PATH` or `DailyCore_ROOT` to the
-  SDK, and then use `find_package(DailyCore 0.22 REQUIRED)` and link to
+  SDK, and then use `find_package(DailyCore 0.23 REQUIRED)` and link to
   `DailyCore::DailyCore`, the shared library, or `DailyCore::DailyCoreStatic`,
   the static library. They bring the headers and everything else they need,
   so you no longer need to list system libraries yourself.
@@ -32,6 +49,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Upgraded libwebrtc to `branch-heads/8010` (M153). Its vendored media and
+  crypto dependencies (ffmpeg, libvpx and BoringSSL among them) are
+  substantially newer.
+
+- On Apple platforms, H.265 calls interoperate with current browsers again.
+  H.265 support now comes from libwebrtc itself, matching the H.265 RTP
+  behaviour current browsers expect; the implementation we previously
+  back-ported predated it.
+
+- **Breaking:** the minimum supported macOS version is now 13.0 (previously
+  10.15). It follows the deployment target libwebrtc 8010 is built against.
+
 - `cmake/FindDailyCore.cmake` now uses the CMake package. It still sets
   `DAILY_CORE_INCLUDE_DIRS` and `DAILY_CORE_LIBRARIES`, and `DAILY_CORE_PATH`
   is no longer required.
@@ -44,6 +73,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed `CMakePresets.json`, and the ones in the examples. They set up vcpkg,
   which isn't needed, and required Visual Studio 2019. On Windows, configure
   with `cmake -S . -B build` instead.
+
+### Fixed
+
+- Fixed `daily_core_context_custom_audio_track_id()` and
+  `daily_core_context_custom_video_track_id()` returning a string that had
+  already been freed, so the track id could not be read. They also released a
+  reference to the track that belonged to the caller, so calling them twice
+  freed the track while it was still in use.
+
+- Fixed a use-after-free when a call client was destroyed without `leave()`
+  ever being called: the mediasoup transports were never torn down, so the peer
+  connection and microphone outlived the client and went on to use WebRTC
+  threads that the context had already deleted. The transports are now torn
+  down explicitly on destroy, and the transport listeners no longer hold a
+  reference that kept the transport alive.
+
+- Fixed a deadlock in the logging layer that could freeze the whole process
+  when a call client was being destroyed while a log line arrived for a call
+  that had already gone away.
+
+- Fixed a native memory leak that grew with the length of a call: the
+  transport, producer and consumer stats, ids and app data read from
+  mediasoupclient were copied but never freed. Call metrics read them every
+  2 seconds, leaking about 0.7 MB per minute with one producer and one
+  consumer, and more with more tracks.
+
+- Fixed an issue where `videoBitrate` and `audioBitrate` in a meeting token's
+  `start_cloud_recording_opts` were ignored, causing recordings started from
+  the token to use the default bitrates.
 
 ## [0.22.0] - 2026-08-19
 
