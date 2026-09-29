@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `DAILY_CORE_VERSION` (e.g. `"0.22.0"`), and `DAILY_CORE_VERSION_MAJOR`,
   `DAILY_CORE_VERSION_MINOR` and `DAILY_CORE_VERSION_PATCH`.
 
+- Added a CMake package. Point `CMAKE_PREFIX_PATH` or `DailyCore_ROOT` to the
+  SDK, and then use `find_package(DailyCore 0.22 REQUIRED)` and link to
+  `DailyCore::DailyCore`. The target brings the headers, the library and the
+  system libraries it needs, so you no longer need to list them yourself.
+
+### Changed
+
+- `cmake/FindDailyCore.cmake` now uses the CMake package. It still sets
+  `DAILY_CORE_INCLUDE_DIRS` and `DAILY_CORE_LIBRARIES`, and `DAILY_CORE_PATH`
+  is no longer required.
+
 ## [0.22.0] - 2026-08-19
 
 ### Fixed
