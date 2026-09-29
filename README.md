@@ -57,10 +57,10 @@ code:
 printf("Daily Core %s\n", DAILY_CORE_VERSION);
 ```
 
-### Projects using `FindDailyCore.cmake`
+### Migrating from `FindDailyCore.cmake`
 
-Projects that copied `cmake/FindDailyCore.cmake` and set `DAILY_CORE_PATH`
-keep working. To switch to the package:
+If your project copied `cmake/FindDailyCore.cmake` and sets `DAILY_CORE_PATH`,
+it keeps working. To use the package instead:
 
 1. Remove your copy of `FindDailyCore.cmake` and the `DAILY_CORE_PATH` check.
 2. Link to `DailyCore::DailyCore` instead of using `DAILY_CORE_INCLUDE_DIRS`
