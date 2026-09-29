@@ -8,8 +8,7 @@ Windows (`x86_64`).
 
 ## 🧰 Requirements
 
-- A C++ compiler: GCC, Clang, Apple Clang or MSVC. The library includes C++
-  code, so link your app as C++.
+- A C or C++ compiler: GCC, Clang, Apple Clang or MSVC.
 - CMake 3.16 or newer, if you build with CMake.
 - On Linux, glibc 2.28 or newer.
 
@@ -22,14 +21,34 @@ It has:
 - `include/daily_core.h`: the C API.
 - `include/daily_core_version.h`: the SDK version, e.g. `DAILY_CORE_VERSION`
   (`"0.22.0"`).
-- `lib/`: the static library, `libdaily_core.a` (`Release/daily_core.lib` and
-  `Debug/daily_cored.lib` on Windows).
+- The shared library: `lib/libdaily_core.so` on Linux, `lib/libdaily_core.dylib`
+  on macOS, and `bin/daily_core.dll` on Windows, which you link with
+  `lib/daily_core.dll.lib`.
+- The static library: `lib/libdaily_core.a` (`lib/Release/daily_core.lib` and
+  `lib/Debug/daily_cored.lib` on Windows).
 - `cmake/`: the CMake package.
+- `shared-library/`: builds the shared library from the static one.
 - `examples/`: example apps.
+
+## ⚖️ Shared or static library?
+
+Use the shared library, unless you need your app to be a single binary. It only
+exports the C API and includes everything else it needs, so:
+
+- You don't link anything else, like system libraries or frameworks.
+- It works with any compiler and C++ standard library, e.g. Unreal Engine's
+  libc++ on Linux, and from C.
+- On Windows, your app can use any runtime library and Debug settings.
+
+You ship it with your app (see below).
+
+The static library is linked into your app, but you also link the system
+libraries it needs, and link your app as C++. On Windows, your app must also
+be compiled with `_ITERATOR_DEBUG_LEVEL=0`.
 
 ## 🛠️ Using the SDK with CMake
 
-Find the package and link to `DailyCore::DailyCore`:
+Find the package and link to `DailyCore::DailyCore`, the shared library:
 
 ```cmake
 find_package(DailyCore 0.22 REQUIRED)
@@ -43,9 +62,9 @@ configure your project:
 cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/daily-core-sdk
 ```
 
-`DailyCore::DailyCore` brings the headers, the library and the system
-libraries it needs on each platform. With MSVC, it also sets
-`_ITERATOR_DEBUG_LEVEL=0`, like the library is built with.
+To link the static library instead, use `DailyCore::DailyCoreStatic`. It brings
+the system libraries it needs on each platform and, with MSVC,
+`_ITERATOR_DEBUG_LEVEL=0`.
 
 The version in `find_package()` is the oldest SDK you need. Newer SDKs with the
 same major version are accepted too. You can also check the version in your
@@ -57,20 +76,46 @@ code:
 printf("Daily Core %s\n", DAILY_CORE_VERSION);
 ```
 
+### Shipping the shared library
+
+- **Linux and macOS:** CMake adds the SDK's `lib/` to your app's rpath, so it
+  runs from your build folder. When you install or package your app, ship the
+  library with it and set the rpath, e.g. to `$ORIGIN/../lib` on Linux or
+  `@executable_path/../Frameworks` on macOS.
+- **Windows:** put `daily_core.dll` next to your app's `.exe`. For example,
+  copy it there after building:
+
+  ```cmake
+  add_custom_command(TARGET my_app POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      $<TARGET_FILE:DailyCore::DailyCore> $<TARGET_FILE_DIR:my_app>
+  )
+  ```
+
 ### Migrating from `FindDailyCore.cmake`
 
 If your project copied `cmake/FindDailyCore.cmake` and sets `DAILY_CORE_PATH`,
-it keeps working. To use the package instead:
+it keeps working, with the static library. To use the package instead:
 
 1. Remove your copy of `FindDailyCore.cmake` and the `DAILY_CORE_PATH` check.
-2. Link to `DailyCore::DailyCore` instead of using `DAILY_CORE_INCLUDE_DIRS`
-   and `DAILY_CORE_LIBRARIES`.
-3. Remove the system libraries and frameworks you added for Daily Core.
+2. Link to `DailyCore::DailyCore` (or `DailyCore::DailyCoreStatic`) instead of
+   using `DAILY_CORE_INCLUDE_DIRS` and `DAILY_CORE_LIBRARIES`.
+3. Remove the system libraries, frameworks and `_ITERATOR_DEBUG_LEVEL` you
+   added for Daily Core.
 
 ## 🔧 Other build systems
 
-Add `include/` to your include path, and link the library with these system
-libraries:
+Add `include/` to your include path, and link the shared library:
+`libdaily_core.so` or `libdaily_core.dylib` with an rpath to find it, or
+`daily_core.dll.lib` on Windows. For example, on Linux:
+
+```bash
+gcc main.c -I/path/to/daily-core-sdk/include \
+  -L/path/to/daily-core-sdk/lib -ldaily_core \
+  -Wl,-rpath,/path/to/daily-core-sdk/lib
+```
+
+To link the static library, also link these system libraries:
 
 - **Linux:** `-lpthread -ldl -lm`.
 - **macOS:** `-ObjC` and the `AppKit`, `AudioToolbox`, `AVFoundation`,
@@ -88,6 +133,20 @@ For example, on Linux:
 g++ -std=c++17 main.cpp -I/path/to/daily-core-sdk/include \
   /path/to/daily-core-sdk/lib/libdaily_core.a -lpthread -ldl -lm
 ```
+
+## 🏗️ Building the shared library
+
+The SDK comes with the shared library. To build it from the static library
+yourself, e.g. from your own build of Daily Core:
+
+```bash
+cmake -S shared-library -B build/shared-library -DCMAKE_BUILD_TYPE=Release
+cmake --build build/shared-library --config Release
+cmake --install build/shared-library --config Release --prefix .
+```
+
+It uses the static library in `lib/`. Set `DAILY_CORE_STATIC_LIBRARY` to use
+another one.
 
 ## 🧪 Examples
 
