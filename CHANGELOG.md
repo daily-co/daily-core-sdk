@@ -24,6 +24,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `DAILY_CORE_INCLUDE_DIRS` and `DAILY_CORE_LIBRARIES`, and `DAILY_CORE_PATH`
   is no longer required.
 
+- The examples use the CMake package and find the SDK they're in, so they no
+  longer need `DAILY_CORE_PATH` or their own copy of `FindDailyCore.cmake`.
+
+### Removed
+
+- Removed `CMakePresets.json`, and the ones in the examples. They set up vcpkg,
+  which isn't needed, and required Visual Studio 2019. On Windows, configure
+  with `cmake -S . -B build` instead.
+
 ## [0.22.0] - 2026-08-19
 
 ### Fixed

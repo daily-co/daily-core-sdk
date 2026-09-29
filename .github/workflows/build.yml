@@ -1,0 +1,79 @@
+name: build
+
+# Builds the examples with this checkout's headers and CMake package, and the
+# library from the latest release.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x86_64
+            os: ubuntu-24.04
+            platform: linux-x86_64
+          - name: Linux aarch64
+            os: ubuntu-24.04-arm
+            platform: linux-arm64
+          - name: macOS aarch64
+            os: macos-latest
+            platform: macos-arm64
+          - name: Windows x86_64
+            os: windows-latest
+            platform: windows-x86_64
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Get the library from the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo "$GITHUB_REPOSITORY" \
+            --pattern "daily-core-sdk-*-${{ matrix.platform }}.zip" --dir release
+          # The Windows Debug library is huge and the examples are built as
+          # Release, so leave it out.
+          unzip -q release/*.zip '*/lib/*' -x '*/lib/Debug/*' -d release
+          cp -R release/daily-core-sdk-*/lib .
+
+      - name: Build the examples
+        run: |
+          for example in c++ c++-custom-tracks; do
+            cmake -S "examples/$example" -B "build/$example" -DCMAKE_BUILD_TYPE=Release
+            cmake --build "build/$example" --config Release --parallel
+          done
+
+      - name: Run an example
+        run: |
+          app=$(find build/c++ -type f \( -name daily_example -o -name daily_example.exe \) | head -1)
+          "$app" | grep Usage
+
+      # Projects that copied FindDailyCore.cmake call find_package(DailyCore)
+      # with it in their module path, and set DAILY_CORE_PATH.
+      - name: Check FindDailyCore.cmake
+        env:
+          DAILY_CORE_PATH: ${{ github.workspace }}
+        run: |
+          mkdir -p build/find-module
+          cat > build/find-module/CMakeLists.txt <<'CMAKE'
+          cmake_minimum_required(VERSION 3.16)
+          project(find_module LANGUAGES CXX)
+          list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+          find_package(DailyCore REQUIRED)
+          message(STATUS "DAILY_CORE_LIBRARIES: ${DAILY_CORE_LIBRARIES}")
+          CMAKE
+          cmake -S build/find-module -B build/find-module/build
