@@ -135,11 +135,26 @@ else()
     # Everything must be resolved here, not when an app loads the library.
     "LINKER:--no-undefined"
     "LINKER:--gc-sections"
-    # So apps built with another C++ standard library, like Unreal Engine's
-    # libc++, can use it.
-    -static-libstdc++
-    -static-libgcc
   )
+
+  # Include the C++ standard library, so the library doesn't depend on it. Some
+  # toolchains don't have a static one, and then the system's is used, which
+  # still works with apps built with another one, like Unreal Engine's libc++.
+  include(CheckCXXSourceCompiles)
+  set(CMAKE_REQUIRED_LINK_OPTIONS -static-libstdc++ -static-libgcc)
+  check_cxx_source_compiles(
+    "#include <string>\nint main() { return static_cast<int>(std::string(\"x\").size()); }"
+    DAILY_CORE_HAS_STATIC_LIBSTDCXX
+  )
+  unset(CMAKE_REQUIRED_LINK_OPTIONS)
+  if(DAILY_CORE_HAS_STATIC_LIBSTDCXX)
+    target_link_options(daily_core PRIVATE -static-libstdc++ -static-libgcc)
+  else()
+    message(WARNING
+      "No static C++ standard library, so the shared library will need the "
+      "system's libstdc++."
+    )
+  endif()
 endif()
 
 install(TARGETS daily_core
