@@ -5,6 +5,14 @@ All notable changes to **daily-core-sdk** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Added `include/daily_core_version.h`, with the SDK version:
+  `DAILY_CORE_VERSION` (e.g. `"0.22.0"`), and `DAILY_CORE_VERSION_MAJOR`,
+  `DAILY_CORE_VERSION_MINOR` and `DAILY_CORE_VERSION_PATCH`.
+
 ## [0.22.0] - 2026-08-19
 
 ### Fixed
