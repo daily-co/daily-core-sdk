@@ -7,6 +7,7 @@
 
 extern "C" {
 #include "daily_core.h"
+#include "daily_core_version.h"
 }
 
 #include <string>
