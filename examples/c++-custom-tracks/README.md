@@ -18,42 +18,32 @@ These are the main showcased features:
 - Send a custom track
 - Receive a custom track from a participant
 
-## Prerequisites
+## Building
 
-Before building the example we need to declare a few environment variables:
+The example finds the SDK it's in. To build it with another copy of the SDK,
+add `-DDailyCore_ROOT=/path/to/daily-core-sdk` when configuring.
 
-```bash
-DAILY_CORE_PATH=/path/to/daily-core
-```
-
-## Linux and macOS
+### Linux and macOS
 
 ```bash
 cmake . -G Ninja -Bbuild -DCMAKE_BUILD_TYPE=Release
 ninja -C build
 ```
 
-## Windows
-
-Initialize the command-line development environment.
+### Windows
 
 ```bash
-"C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvarsall.bat" amd64
-```
-
-And then configure and build:
-
-```bash
-cmake . -Bbuild --preset vcpkg
+cmake . -Bbuild
 cmake --build build --config Release
 ```
 
-## Cross-compiling (Linux aarch64)
+### Cross-compiling (Linux aarch64)
 
-It is possible to build the example for the `aarch64` architecture in Linux with:
+Use the example from the `linux-arm64` SDK, or point `DailyCore_ROOT` to it,
+and build with:
 
 ```bash
-cmake . -Bbuild -DCMAKE_TOOLCHAIN_FILE=aarch64-linux-toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+cmake . -G Ninja -Bbuild -DCMAKE_TOOLCHAIN_FILE=aarch64-linux-toolchain.cmake -DCMAKE_BUILD_TYPE=Release
 ninja -C build
 ```
 

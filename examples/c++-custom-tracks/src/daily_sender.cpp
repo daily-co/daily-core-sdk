@@ -25,12 +25,14 @@
 
 static const char* DEFAULT_CLIENT_NAME = "Sender";
 
-// NOTE: Do not modify. This is a way for the server to recognize a known
-// client library.
-static DailyAboutClient about_client = {
-        .library = "daily-core-sdk",
-        .version = "0.19.0"
-};
+// NOTE: Do not modify the library name. This is a way for the server to
+// recognize a known client library.
+static DailyAboutClient about_client() {
+    DailyAboutClient about {};
+    about.library = "daily-core-sdk";
+    about.version = DAILY_CORE_VERSION;
+    return about;
+}
 
 static std::atomic<bool> running = true;
 static std::atomic<bool> quit = false;
@@ -144,8 +146,8 @@ static void set_audio_device_cb(
 ) {}
 
 static DailyContextDelegate context_delegate() {
-    DailyContextDelegatePtr* ptr = nullptr;
-    DailyContextDelegate driver = {.ptr = ptr};
+    DailyContextDelegate driver {};
+    driver.ptr = nullptr;
     return driver;
 }
 
@@ -158,14 +160,13 @@ static DailyWebRtcContextDelegate webrtc_context_delegate() {
     data->request_id = 0;
     data->leave_request_id = -1;
 
-    DailyWebRtcContextDelegate webrtc = {
-            .ptr = (DailyWebRtcContextDelegatePtr*)data,
-            .fns = {.get_user_media = get_user_media_cb,
-                    .get_enumerated_devices = enumerate_devices_cb,
-                    .create_audio_device_module = create_audio_device_module_cb,
-                    .get_audio_device = get_audio_device_cb,
-                    .set_audio_device = set_audio_device_cb}
-    };
+    DailyWebRtcContextDelegate webrtc {};
+    webrtc.ptr = (DailyWebRtcContextDelegatePtr*)data;
+    webrtc.fns.get_user_media = get_user_media_cb;
+    webrtc.fns.get_enumerated_devices = enumerate_devices_cb;
+    webrtc.fns.create_audio_device_module = create_audio_device_module_cb;
+    webrtc.fns.get_audio_device = get_audio_device_cb;
+    webrtc.fns.set_audio_device = set_audio_device_cb;
     return webrtc;
 }
 
@@ -250,7 +251,7 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl << "Initializing Daily Core..." << std::endl;
     DailyContextDelegate driver = context_delegate();
     DailyWebRtcContextDelegate webrtc = webrtc_context_delegate();
-    daily_core_context_create(driver, webrtc, about_client);
+    daily_core_context_create(driver, webrtc, about_client());
 
     DailyExampleData* app_data = (DailyExampleData*)webrtc.ptr;
 
@@ -264,9 +265,9 @@ int main(int argc, char* argv[]) {
     app_data->custom_audio_source = audio_source;
     app_data->client_name = std::string(client_name);
 
-    DailyCallClientDelegate delegate = {
-            .ptr = app_data, .fns = {.on_event = event_listener}
-    };
+    DailyCallClientDelegate delegate {};
+    delegate.ptr = app_data;
+    delegate.fns.on_event = event_listener;
 
     // Setup delegate. This will handle events from the library.
     daily_core_call_client_set_delegate(client, delegate);

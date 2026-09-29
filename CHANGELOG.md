@@ -5,6 +5,34 @@ All notable changes to **daily-core-sdk** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Added `include/daily_core_version.h`, with the SDK version:
+  `DAILY_CORE_VERSION` (e.g. `"0.22.0"`), and `DAILY_CORE_VERSION_MAJOR`,
+  `DAILY_CORE_VERSION_MINOR` and `DAILY_CORE_VERSION_PATCH`.
+
+- Added a CMake package. Point `CMAKE_PREFIX_PATH` or `DailyCore_ROOT` to the
+  SDK, and then use `find_package(DailyCore 0.22 REQUIRED)` and link to
+  `DailyCore::DailyCore`. The target brings the headers, the library and the
+  system libraries it needs, so you no longer need to list them yourself.
+
+### Changed
+
+- `cmake/FindDailyCore.cmake` now uses the CMake package. It still sets
+  `DAILY_CORE_INCLUDE_DIRS` and `DAILY_CORE_LIBRARIES`, and `DAILY_CORE_PATH`
+  is no longer required.
+
+- The examples use the CMake package and find the SDK they're in, so they no
+  longer need `DAILY_CORE_PATH` or their own copy of `FindDailyCore.cmake`.
+
+### Removed
+
+- Removed `CMakePresets.json`, and the ones in the examples. They set up vcpkg,
+  which isn't needed, and required Visual Studio 2019. On Windows, configure
+  with `cmake -S . -B build` instead.
+
 ## [0.22.0] - 2026-08-19
 
 ### Fixed

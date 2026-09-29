@@ -1,51 +1,40 @@
-# FindDailyCore.cmake
 #
-# This module defines:
-#   DAILY_CORE_LIBRARIES
+# Copyright (c) 2024-2026, Daily
+#
+# Finds the Daily Core C++ SDK for projects that use find_package(DailyCore)
+# with this file in their CMAKE_MODULE_PATH.
+#
+# New projects don't need this file: point CMAKE_PREFIX_PATH or DailyCore_ROOT
+# to the SDK and link to DailyCore::DailyCore (see DailyCoreConfig.cmake).
+#
+# Looks in the DAILY_CORE_PATH environment variable, if it's set, and defines:
+#
+#   DailyCore::DailyCore  - The library, with its headers and system libraries.
+#   DAILY_CORE_FOUND      - Whether the SDK was found.
 #   DAILY_CORE_INCLUDE_DIRS
-#   DAILY_CORE_FOUND
+#   DAILY_CORE_LIBRARIES
 #
 
-# Check if the DAILY_CORE_PATH environment variable is set.
-if (NOT DEFINED ENV{DAILY_CORE_PATH})
-  message(FATAL_ERROR "You must define DAILY_CORE_PATH environment variable.")
+set(_daily_core_version)
+if(DailyCore_FIND_VERSION)
+  set(_daily_core_version "${DailyCore_FIND_VERSION}")
+  if(DailyCore_FIND_VERSION_EXACT)
+    list(APPEND _daily_core_version EXACT)
+  endif()
 endif()
 
-set(DAILY_CORE_PATH "$ENV{DAILY_CORE_PATH}")
-
-find_path(DAILY_CORE_INCLUDE_DIR
-  NAMES daily_core.h
-  PATHS ${DAILY_CORE_PATH}/include
+find_package(DailyCore ${_daily_core_version} CONFIG QUIET
+  HINTS "$ENV{DAILY_CORE_PATH}" "${CMAKE_CURRENT_LIST_DIR}/.."
 )
-mark_as_advanced(DAILY_CORE_INCLUDE_DIR)
+unset(_daily_core_version)
 
-find_library(DAILY_CORE_LIBRARY_RELEASE
-  NAMES daily_core
-  HINTS ${DAILY_CORE_PATH}/lib ${DAILY_CORE_PATH}/lib/Release
-  PATH_SUFFIXES lib
-)
-mark_as_advanced(DAILY_CORE_LIBRARY_RELEASE)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(DailyCore CONFIG_MODE)
 
-find_library(DAILY_CORE_LIBRARY_DEBUG
-  NAMES daily_cored
-  HINTS ${DAILY_CORE_PATH}/lib/Debug
-  PATH_SUFFIXES lib
-)
-mark_as_advanced(DAILY_CORE_LIBRARY_DEBUG)
-
-include(SelectLibraryConfigurations)
-select_library_configurations(DAILY_CORE)
-
-if(DAILY_CORE_LIBRARY AND DAILY_CORE_INCLUDE_DIR)
-  set(DAILY_CORE_LIBRARIES "${DAILY_CORE_LIBRARY}")
-  set(DAILY_CORE_INCLUDE_DIRS ${DAILY_CORE_INCLUDE_DIR})
-  set(DAILY_CORE_FOUND TRUE)
-else()
-  set(DAILY_CORE_FOUND FALSE)
-endif()
-
-if(DAILY_CORE_FOUND)
-  message(STATUS "Found Daily Core: ${DAILY_CORE_LIBRARIES}")
-else()
-  message(STATUS "Daily Core library not found")
+set(DAILY_CORE_FOUND ${DailyCore_FOUND})
+if(DailyCore_FOUND)
+  get_target_property(DAILY_CORE_INCLUDE_DIRS
+    DailyCore::DailyCore INTERFACE_INCLUDE_DIRECTORIES
+  )
+  set(DAILY_CORE_LIBRARIES DailyCore::DailyCore)
 endif()

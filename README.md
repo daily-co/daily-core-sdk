@@ -6,95 +6,102 @@
 It supports Linux (`x86_64` and `aarch64`), macOS (`x86_64` and `aarch64`) and
 Windows (`x86_64`).
 
-## 🧪 Code examples
-
-Take a look at the [examples](./examples) directory.
-
 ## 🧰 Requirements
 
-On all platforms:
+- A C++ compiler: GCC, Clang, Apple Clang or MSVC. The library includes C++
+  code, so link your app as C++.
+- CMake 3.16 or newer, if you build with CMake.
+- On Linux, glibc 2.28 or newer.
 
-- cmake 3.16 or older.
+## 📦 What's in the SDK
 
-On Windows you also need vcpkg:
+Download the SDK for your platform from the
+[releases](https://github.com/daily-co/daily-core-sdk/releases) and unpack it.
+It has:
 
-- [vcpkg](https://learn.microsoft.com/en-us/vcpkg/get_started/overview)
+- `include/daily_core.h`: the C API.
+- `include/daily_core_version.h`: the SDK version, e.g. `DAILY_CORE_VERSION`
+  (`"0.22.0"`).
+- `lib/`: the static library, `libdaily_core.a` (`Release/daily_core.lib` and
+  `Debug/daily_cored.lib` on Windows).
+- `cmake/`: the CMake package.
+- `examples/`: example apps.
 
-## 🚀 First steps
+## 🛠️ Using the SDK with CMake
 
-Before building the example we need to declare a few environment variables:
+Find the package and link to `DailyCore::DailyCore`:
+
+```cmake
+find_package(DailyCore 0.22 REQUIRED)
+target_link_libraries(my_app PRIVATE DailyCore::DailyCore)
+```
+
+Then point `CMAKE_PREFIX_PATH` (or `DailyCore_ROOT`) to the SDK when you
+configure your project:
 
 ```bash
-DAILY_CORE_PATH=/path/to/daily-core
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/daily-core-sdk
 ```
 
-Now, make a copy of the `cmake` folder into your project.
+`DailyCore::DailyCore` brings the headers, the library and the system
+libraries it needs on each platform. With MSVC, it also sets
+`_ITERATOR_DEBUG_LEVEL=0`, like the library is built with.
 
-On Windows also copy [CMakePresets.json](./CMakePresets.json) to your project.
+The version in `find_package()` is the oldest SDK you need. Newer SDKs with the
+same major version are accepted too. You can also check the version in your
+code:
 
-## 🛠️ Preparing your CMakeList.txt
+```c
+#include <daily_core_version.h>
 
-We need to make sure the `DAILY_CORE_PATH` environment variable is defined:
-
-```
-#
-# DAILY_CORE_PATH environment variable should be defined.
-#
-if (NOT DEFINED ENV{DAILY_CORE_PATH})
-  message(FATAL_ERROR "You must define DAILY_CORE_PATH environment variable.")
-endif()
-
-set(DAILY_CORE_PATH "$ENV{DAILY_CORE_PATH}")
+printf("Daily Core %s\n", DAILY_CORE_VERSION);
 ```
 
-And then you can add `find_package()` to find the library:
+### Migrating from `FindDailyCore.cmake`
 
-```
-find_package(DailyCore)
-```
+If your project copied `cmake/FindDailyCore.cmake` and sets `DAILY_CORE_PATH`,
+it keeps working. To use the package instead:
 
-This will expose `DAILY_CORE_INCLUDE_DIRS` and `DAILY_CORE_LIBRARIES` which you
-can then use in your target application:
+1. Remove your copy of `FindDailyCore.cmake` and the `DAILY_CORE_PATH` check.
+2. Link to `DailyCore::DailyCore` instead of using `DAILY_CORE_INCLUDE_DIRS`
+   and `DAILY_CORE_LIBRARIES`.
+3. Remove the system libraries and frameworks you added for Daily Core.
 
-```
-target_include_directories(daily_example
-  PRIVATE
-  ${DAILY_CORE_INCLUDE_DIRS}
-)
+## 🔧 Other build systems
 
-target_link_libraries(daily_example
-  PRIVATE
-  ${DAILY_CORE_LIBRARIES}
-)
-```
+Add `include/` to your include path, and link the library with these system
+libraries:
 
-## 🐧🍏 Linux and macOS
+- **Linux:** `-lpthread -ldl -lm`.
+- **macOS:** `-ObjC` and the `AppKit`, `AudioToolbox`, `AVFoundation`,
+  `CoreAudio`, `CoreGraphics`, `CoreMedia`, `CoreVideo`, `Foundation`,
+  `IOSurface`, `Metal`, `MetalKit`, `OpenGL`, `QuartzCore`, `ScreenCaptureKit`,
+  `Security` and `VideoToolbox` frameworks.
+- **Windows:** `bcrypt`, `crypt32`, `d3d11`, `dmoguids`, `dwmapi`, `dxgi`,
+  `gdi32`, `iphlpapi`, `msdmo`, `ncrypt`, `ntdll`, `ole32`, `secur32`,
+  `shcore`, `strmiids`, `userenv`, `winmm`, `wmcodecdspuuid` and `ws2_32`.
+  Also compile with `_ITERATOR_DEBUG_LEVEL=0`.
+
+For example, on Linux:
 
 ```bash
+g++ -std=c++17 main.cpp -I/path/to/daily-core-sdk/include \
+  /path/to/daily-core-sdk/lib/libdaily_core.a -lpthread -ldl -lm
+```
+
+## 🧪 Examples
+
+- [c++](./examples/c++): joins a room and sends the audio of the first
+  participant who joins back to the room.
+- [c++-custom-tracks](./examples/c++-custom-tracks): sends and receives custom
+  audio tracks.
+
+The examples find the SDK they're in, so you can build them right away:
+
+```bash
+cd examples/c++
 cmake . -G Ninja -Bbuild -DCMAKE_BUILD_TYPE=Release
 ninja -C build
 ```
 
-## 🪟 Windows
-
-Initialize the command-line development environment.
-
-```bash
-"C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvarsall.bat" amd64
-```
-
-And then configure and build:
-
-```bash
-cmake . -Bbuild --preset vcpkg
-cmake --build build --config Release
-```
-
-## 🔀🐧Cross-compiling (Linux aarch64)
-
-It is possible to build the example for the `aarch64` architecture in Linux with:
-
-```bash
-cmake . -Bbuild -DCMAKE_TOOLCHAIN_FILE=aarch64-linux-toolchain.cmake -DCMAKE_BUILD_TYPE=Release
-ninja -C build
-```
+See each example's README for Windows, cross-compiling and how to run it.
