@@ -31,6 +31,17 @@ target_include_directories(daily_example PRIVATE
 
 target_link_libraries(daily_example PRIVATE DailyCore::DailyCore)
 
+# Windows finds DLLs next to the app, so copy the Daily Core DLL there.
+if(WIN32)
+  get_target_property(_daily_core_type DailyCore::DailyCore TYPE)
+  if(_daily_core_type STREQUAL "SHARED_LIBRARY")
+    add_custom_command(TARGET daily_example POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:DailyCore::DailyCore> $<TARGET_FILE_DIR:daily_example>
+    )
+  endif()
+endif()
+
 if(UNIX)
   target_compile_options(daily_example PRIVATE -Wall -fno-rtti)
 endif()
