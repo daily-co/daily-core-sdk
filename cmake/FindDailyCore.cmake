@@ -9,10 +9,13 @@
 #
 # Looks in the DAILY_CORE_PATH environment variable, if it's set, and defines:
 #
-#   DailyCore::DailyCore  - The library, with its headers and system libraries.
 #   DAILY_CORE_FOUND      - Whether the SDK was found.
 #   DAILY_CORE_INCLUDE_DIRS
-#   DAILY_CORE_LIBRARIES
+#   DAILY_CORE_LIBRARIES  - The static library, as before, with its system
+#                           libraries.
+#
+# It also defines the package's targets, DailyCore::DailyCore and
+# DailyCore::DailyCoreStatic.
 #
 
 set(_daily_core_version)
@@ -33,8 +36,12 @@ find_package_handle_standard_args(DailyCore CONFIG_MODE)
 
 set(DAILY_CORE_FOUND ${DailyCore_FOUND})
 if(DailyCore_FOUND)
+  if(TARGET DailyCore::DailyCoreStatic)
+    set(DAILY_CORE_LIBRARIES DailyCore::DailyCoreStatic)
+  else()
+    set(DAILY_CORE_LIBRARIES DailyCore::DailyCore)
+  endif()
   get_target_property(DAILY_CORE_INCLUDE_DIRS
-    DailyCore::DailyCore INTERFACE_INCLUDE_DIRECTORIES
+    ${DAILY_CORE_LIBRARIES} INTERFACE_INCLUDE_DIRECTORIES
   )
-  set(DAILY_CORE_LIBRARIES DailyCore::DailyCore)
 endif()

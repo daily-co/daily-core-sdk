@@ -15,8 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a CMake package. Point `CMAKE_PREFIX_PATH` or `DailyCore_ROOT` to the
   SDK, and then use `find_package(DailyCore 0.22 REQUIRED)` and link to
-  `DailyCore::DailyCore`. The target brings the headers, the library and the
-  system libraries it needs, so you no longer need to list them yourself.
+  `DailyCore::DailyCore`, the shared library, or `DailyCore::DailyCoreStatic`,
+  the static library. They bring the headers and everything else they need,
+  so you no longer need to list system libraries yourself.
+
+- Added a shared library: `lib/libdaily_core.so` on Linux,
+  `lib/libdaily_core.dylib` on macOS, and `bin/daily_core.dll` (with
+  `lib/daily_core.dll.lib`) on Windows. It only exports the C API and includes
+  everything else it needs, so apps link nothing else, can use any compiler and
+  C++ standard library (e.g. Unreal Engine's libc++ on Linux), and on Windows
+  any runtime library and Debug settings. The static library is still
+  included.
+
+- Added `shared-library/`, which builds the shared library from the static
+  one.
 
 ### Changed
 
