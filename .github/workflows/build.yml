@@ -45,9 +45,7 @@ jobs:
         run: |
           gh release download --repo "$GITHUB_REPOSITORY" \
             --pattern "daily-core-sdk-*-${{ matrix.platform }}.zip" --dir release
-          # The Windows Debug library is huge and the examples are built as
-          # Release, so leave it out.
-          unzip -q release/*.zip '*/lib/*' -x '*/lib/Debug/*' -d release
+          unzip -q release/*.zip -d release
           cp -R release/daily-core-sdk-*/lib .
 
       - name: Build the examples
