@@ -887,6 +887,10 @@ struct DailyCallClientDevicesFns daily_core_call_client_devices_fns(void);
 #if !defined(WASM32)
 /**
  * Obtain the media devices available to the call client
+ *
+ * The caller owns the returned string and must free it with
+ * [daily_core_string_free].
+ *
  * # Safety
  * Will crash if called prior to a [daily_core_context_create] or after [daily_core_context_destroy]
  */
@@ -936,6 +940,10 @@ struct DailyCallClientInputsFns daily_core_call_client_inputs_fns(void);
 #if !defined(WASM32)
 /**
  * Obtain the currently desired input settings
+ *
+ * The caller owns the returned string and must free it with
+ * [daily_core_string_free].
+ *
  * # Safety
  * Will crash if the `query_config` parameter is not a valid pointer
  * to a `const char *` (or `nullptr`)
@@ -1126,6 +1134,9 @@ struct DailyCallClientParticipantsFns daily_core_call_client_participants_fns(vo
 #if !defined(WASM32)
 /**
  * Obtain the current participants in the call
+ *
+ * The caller owns the returned string and must free it with
+ * [daily_core_string_free].
  */
 const char *daily_core_call_client_participants(struct DailyRawCallClient *client);
 #endif
@@ -1133,11 +1144,20 @@ const char *daily_core_call_client_participants(struct DailyRawCallClient *clien
 #if !defined(WASM32)
 /**
  * Obtain the current active speaker in the call
+ *
+ * The caller owns the returned string and must free it with
+ * [daily_core_string_free].
  */
 const char *daily_core_call_client_active_speaker(struct DailyRawCallClient *client);
 #endif
 
 #if !defined(WASM32)
+/**
+ * Obtain the participant counts in the call
+ *
+ * The caller owns the returned string and must free it with
+ * [daily_core_string_free].
+ */
 const char *daily_core_call_client_participant_counts(struct DailyRawCallClient *client);
 #endif
 
@@ -1201,6 +1221,10 @@ struct DailyCallClientPublishingFns daily_core_call_client_publishing_fns(void);
 #if !defined(WASM32)
 /**
  * Obtain the current publishing settings for this call
+ *
+ * The caller owns the returned string and must free it with
+ * [daily_core_string_free].
+ *
  * # Safety
  * Will crash if the `query_config` parameter is not a valid pointer
  * to a `const char *` (or `nullptr`)
@@ -1283,6 +1307,9 @@ struct DailyCallClientSubscriptionsFns daily_core_call_client_subscriptions_fns(
 #if !defined(WASM32)
 /**
  * Obtain the current subscription settings
+ *
+ * The caller owns the returned string and must free it with
+ * [daily_core_string_free].
  */
 const char *daily_core_call_client_subscriptions(struct DailyRawCallClient *client);
 #endif
@@ -1303,6 +1330,9 @@ void daily_core_call_client_update_subscriptions(struct DailyRawCallClient *clie
 #if !defined(WASM32)
 /**
  * Obtain the current subscription profiles
+ *
+ * The caller owns the returned string and must free it with
+ * [daily_core_string_free].
  */
 const char *daily_core_call_client_subscription_profiles(struct DailyRawCallClient *client);
 #endif
@@ -1324,6 +1354,12 @@ struct DailyCallClientTelemetryFns daily_core_call_client_telemetry_fns(void);
 #endif
 
 #if !defined(WASM32)
+/**
+ * Obtain the network stats of the call
+ *
+ * The caller owns the returned string and must free it with
+ * [daily_core_string_free].
+ */
 const char *daily_core_call_client_get_network_stats(struct DailyRawCallClient *client);
 #endif
 
@@ -1582,6 +1618,9 @@ void daily_core_context_destroy_custom_video_track(DailyVideoTrack *video_track)
 #if !defined(WASM32)
 /**
  * Returns the id of the given audio track.
+ *
+ * The caller owns the returned string and must free it with
+ * [daily_core_string_free].
  */
 const char *daily_core_context_custom_audio_track_id(DailyAudioTrack *audio_track);
 #endif
@@ -1589,6 +1628,9 @@ const char *daily_core_context_custom_audio_track_id(DailyAudioTrack *audio_trac
 #if !defined(WASM32)
 /**
  * Returns the id of the given video track.
+ *
+ * The caller owns the returned string and must free it with
+ * [daily_core_string_free].
  */
 const char *daily_core_context_custom_video_track_id(DailyVideoTrack *video_track);
 #endif
@@ -1620,6 +1662,9 @@ WebrtcAudioDeviceModule *daily_core_context_create_audio_device_module(DailyDevi
 #if !defined(WASM32)
 /**
  * Implements enumeratedDevices for a previously created device manager.
+ *
+ * The caller owns the returned string and must free it with
+ * [daily_core_string_free].
  */
 char *daily_core_context_device_manager_enumerated_devices(const DailyDeviceManager *device_manager);
 #endif
@@ -1785,4 +1830,17 @@ float daily_core_context_vad_analyze(DailyVad *vad, const int16_t *frames, uintp
  * Set the WebRTC, mediasoupclient, and daily log levels.
  */
 void daily_core_set_log_level(enum DailyLogLevel log_level);
+#endif
+
+#if !defined(WASM32)
+/**
+ * Frees a string returned by a `daily_core_*` function. Does nothing if
+ * `string` is null.
+ *
+ * # Safety
+ *
+ * `string` must be null or a string returned by a `daily_core_*` function
+ * that hasn't been freed yet. It can't be used after this call.
+ */
+void daily_core_string_free(const char *string);
 #endif
