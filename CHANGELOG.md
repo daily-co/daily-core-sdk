@@ -32,20 +32,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a CMake package. Point `CMAKE_PREFIX_PATH` or `DailyCore_ROOT` to the
   SDK, and then use `find_package(DailyCore 0.23 REQUIRED)` and link to
-  `DailyCore::DailyCore`, the shared library, or `DailyCore::DailyCoreStatic`,
-  the static library. They bring the headers and everything else they need,
-  so you no longer need to list system libraries yourself.
+  `DailyCore::DailyCore`, the shared library. It brings the headers, and you no
+  longer need to list system libraries yourself.
 
 - Added a shared library: `lib/libdaily_core.so` on Linux,
   `lib/libdaily_core.dylib` on macOS, and `bin/daily_core.dll` (with
   `lib/daily_core.dll.lib`) on Windows. It only exports the C API and includes
   everything else it needs, so apps link nothing else, can use any compiler and
   C++ standard library (e.g. Unreal Engine's libc++ on Linux), and on Windows
-  any runtime library and Debug settings. The static library is still
-  included.
-
-- Added `shared-library/`, which builds the shared library from the static
-  one.
+  any runtime library and Debug settings. Its dependencies (libwebrtc,
+  BoringSSL, ...) stay inside it, so they no longer clash with the ones apps
+  use, e.g. their own OpenSSL. On Windows it includes the C runtime (`/MT`), so
+  it doesn't need the Visual C++ Redistributable.
 
 ### Changed
 
@@ -62,13 +60,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   10.15). It follows the deployment target libwebrtc 8010 is built against.
 
 - `cmake/FindDailyCore.cmake` now uses the CMake package. It still sets
-  `DAILY_CORE_INCLUDE_DIRS` and `DAILY_CORE_LIBRARIES`, and `DAILY_CORE_PATH`
-  is no longer required.
+  `DAILY_CORE_INCLUDE_DIRS` and `DAILY_CORE_LIBRARIES`, which is now the shared
+  library, and `DAILY_CORE_PATH` is no longer required.
 
 - The examples use the CMake package and find the SDK they're in, so they no
   longer need `DAILY_CORE_PATH` or their own copy of `FindDailyCore.cmake`.
 
 ### Removed
+
+- **Breaking:** removed the static library (`lib/libdaily_core.a`, and
+  `lib/Release/daily_core.lib` and `lib/Debug/daily_cored.lib` on Windows).
+  Link the shared library instead (see the README). The static library exposed
+  all the symbols of its dependencies, which clashed with apps that use their
+  own (e.g. OpenSSL), and required apps to link the system libraries it needed.
 
 - Removed `CMakePresets.json`, and the ones in the examples. They set up vcpkg,
   which isn't needed, and required Visual Studio 2019. On Windows, configure
