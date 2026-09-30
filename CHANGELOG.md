@@ -37,13 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a shared library: `lib/libdaily_core.so` on Linux,
   `lib/libdaily_core.dylib` on macOS, and `bin/daily_core.dll` (with
-  `lib/daily_core.dll.lib`) on Windows. It only exports the C API and includes
-  everything else it needs, so apps link nothing else, can use any compiler and
-  C++ standard library (e.g. Unreal Engine's libc++ on Linux), and on Windows
-  any runtime library and Debug settings. Its dependencies (libwebrtc,
-  BoringSSL, ...) stay inside it, so they no longer clash with the ones apps
-  use, e.g. their own OpenSSL. On Windows it includes the C runtime (`/MT`), so
-  it doesn't need the Visual C++ Redistributable.
+  `lib/daily_core.dll.lib`) on Windows. It only exports the C API, so it works
+  with any compiler and C++ standard library, and it's the only library you
+  link. On Windows it doesn't need the Visual C++ Redistributable.
 
 ### Changed
 

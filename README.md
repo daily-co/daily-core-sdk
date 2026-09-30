@@ -11,6 +11,7 @@ Windows (`x86_64`).
 - A C or C++ compiler: GCC, Clang, Apple Clang or MSVC.
 - CMake 3.16 or newer, if you build with CMake.
 - On Linux, glibc 2.28 or newer.
+- On Windows, Windows 10 or newer.
 
 ## 📦 What's in the SDK
 
@@ -27,19 +28,8 @@ It has:
 - `cmake/`: the CMake package.
 - `examples/`: example apps.
 
-The library is a shared library. It only exports the C API and includes
-everything else it needs, so:
-
-- You don't link anything else, like system libraries or frameworks.
-- It works with any compiler and C++ standard library, e.g. Unreal Engine's
-  libc++ on Linux, and from C.
-- Its dependencies (libwebrtc, BoringSSL, ...) stay inside it, so they don't
-  clash with the ones your app uses, e.g. its own OpenSSL.
-- On Windows, your app can use any runtime library (`/MT` or `/MD`) and Debug
-  settings. The DLL includes the C runtime, so it doesn't need the Visual C++
-  Redistributable: it only uses Windows' own DLLs (Windows 10 or newer, x64).
-
-You ship it with your app (see below).
+The library has a C API, so you can use it from C or C++ with any compiler,
+and it's the only library you link.
 
 ## 🛠️ Using the SDK with CMake
 
@@ -73,8 +63,8 @@ printf("Daily Core %s\n", DAILY_CORE_VERSION);
   runs from your build folder. When you install or package your app, ship the
   library with it and set the rpath, e.g. to `$ORIGIN/../lib` on Linux or
   `@executable_path/../Frameworks` on macOS.
-- **Windows:** put `daily_core.dll` next to your app's `.exe`. For example,
-  copy it there after building:
+- **Windows:** put `daily_core.dll` next to your app's `.exe`. It doesn't need
+  the Visual C++ Redistributable. For example, copy it there after building:
 
   ```cmake
   add_custom_command(TARGET my_app POST_BUILD

@@ -1,66 +1,54 @@
-# Example
+# Audio mirror example
 
-This example shows how to use the Daily Core C++ SDK. It joins a room and
-mirrors the audio of the first remote participant to join back to the room.
+This example joins a room and sends the audio of the first participant who
+joins back to the room, so they hear themselves.
 
-These are the main showcased features:
+It shows how to:
 
-- Join a room
-- Set client user name
-- Event handling (participant joins, participant leaves, ...)
-- Receive audio from the room
-- Send audio to the room
-- Update subscriptions and publishing
+- Join a room with a user name.
+- Handle events, such as participants joining and leaving.
+- Receive and send audio.
+- Update subscriptions and publishing.
 
 ## Building
 
-The example finds the SDK it's in. To build it with another copy of the SDK,
-add `-DDailyCore_ROOT=/path/to/daily-core-sdk` when configuring.
+The example uses the SDK it's in. To use another copy of the SDK, add
+`-DDailyCore_ROOT=/path/to/daily-core-sdk` when you configure.
 
-### Linux and macOS
+On Linux and macOS:
 
 ```bash
 cmake . -G Ninja -Bbuild -DCMAKE_BUILD_TYPE=Release
 ninja -C build
 ```
 
-### Windows
+On Windows:
 
 ```bash
 cmake . -Bbuild
 cmake --build build --config Release
 ```
 
-### Cross-compiling (Linux aarch64)
-
-Use the example from the `linux-arm64` SDK, or point `DailyCore_ROOT` to it,
-and build with:
+To cross-compile for Linux aarch64, use the `linux-arm64` SDK and:
 
 ```bash
 cmake . -G Ninja -Bbuild -DCMAKE_TOOLCHAIN_FILE=aarch64-linux-toolchain.cmake -DCMAKE_BUILD_TYPE=Release
 ninja -C build
 ```
 
-## Usage
-
-After building the example you should be able to run it:
-
-
-```bash
-./build/daily_example
-
-| Argument | Description                                                               |
-|----------|---------------------------------------------------------------------------|
-| -m       | The Daily meeting URL                                                     |
-| -t       | Daily meeting token if required by the meeting                            |
-| -n       | The name this client should be connected to the meeting. (default: Guest) |
-```
-
-For example:
+## Running
 
 ```bash
 ./build/daily_example -m ROOM_URL
 ```
 
-Now, join the room URL from your browser (this will load Daily Prebuilt). You
-should be able to hear yourself when you speak because of the mirroring.
+On Windows, the app is `build\Release\daily_example.exe`.
+
+| Option | Description                                  |
+|--------|----------------------------------------------|
+| `-m`   | The room URL.                                |
+| `-t`   | A meeting token, if the room needs one.      |
+| `-n`   | The user name to join with (default: Guest). |
+
+Then join the same room from your browser. You should hear yourself when you
+speak.

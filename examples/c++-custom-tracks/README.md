@@ -1,93 +1,63 @@
-# Example
+# Custom tracks example
 
-This example shows how to use the Daily Core C++ SDK to send and receive custom
-tracks. There are a couple of applications, `daily_sender` and `daily_receiver`.
+This example has two apps:
 
-The `daily_sender` application only sends a custom track named "cxx-wave" with a
-basic since wave.
+- `daily_sender` sends a sine wave in a custom audio track named `cxx-wave`.
+- `daily_receiver` receives `cxx-wave` from the first participant who joins,
+  and sends it back in a custom audio track named `cxx-wave-mirror`.
 
-The `daily_receiver` applications receives the custom track "cxx-wave" and
-creates a mirror to another custom track named "cxx-wave-mirror".
+They show how to:
 
-These are the main showcased features:
-
-- Join a room
-- Set client user name
-- Event handling (participant joins, participant leaves, ...)
-- Update subscriptions and publishing
-- Send a custom track
-- Receive a custom track from a participant
+- Join a room with a user name.
+- Handle events, such as participants joining and leaving.
+- Send and receive custom tracks.
+- Update subscriptions and publishing.
 
 ## Building
 
-The example finds the SDK it's in. To build it with another copy of the SDK,
-add `-DDailyCore_ROOT=/path/to/daily-core-sdk` when configuring.
+The example uses the SDK it's in. To use another copy of the SDK, add
+`-DDailyCore_ROOT=/path/to/daily-core-sdk` when you configure.
 
-### Linux and macOS
+On Linux and macOS:
 
 ```bash
 cmake . -G Ninja -Bbuild -DCMAKE_BUILD_TYPE=Release
 ninja -C build
 ```
 
-### Windows
+On Windows:
 
 ```bash
 cmake . -Bbuild
 cmake --build build --config Release
 ```
 
-### Cross-compiling (Linux aarch64)
-
-Use the example from the `linux-arm64` SDK, or point `DailyCore_ROOT` to it,
-and build with:
+To cross-compile for Linux aarch64, use the `linux-arm64` SDK and:
 
 ```bash
 cmake . -G Ninja -Bbuild -DCMAKE_TOOLCHAIN_FILE=aarch64-linux-toolchain.cmake -DCMAKE_BUILD_TYPE=Release
 ninja -C build
 ```
 
-## Usage
+## Running
 
-After building the example you should be able to run both `daily_sender` and `daily_receiver`:
-
-
-```bash
-./build/daily_sender
-
-| Argument | Description                                                                |
-|----------|----------------------------------------------------------------------------|
-| -m       | The Daily meeting URL                                                      |
-| -t       | Daily meeting token if required by the meeting                             |
-| -n       | The name this client should be connected to the meeting. (default: Sender) |
-
-./build/daily_receiver
-
-| Argument | Description                                                                  |
-|----------|------------------------------------------------------------------------------|
-| -m       | The Daily meeting URL                                                        |
-| -t       | Daily meeting token if required by the meeting                               |
-| -n       | The name this client should be connected to the meeting. (default: Receiver) |
-```
-
-For example:
+Run the sender first, then the receiver in another terminal:
 
 ```bash
 ./build/daily_sender -m ROOM_URL
-```
-
-and then
-
-```bash
 ./build/daily_receiver -m ROOM_URL
 ```
 
-In order to verify that custom tracks are being sent correctly, you can open the
-provided `index.html` into your favorite browser and join the Daily room URL you
-have used before. You should be able to select the custom audio track you want
-to hear.
+On Windows, the apps are in `build\Release\`.
 
-NOTE: Run `daily_sender` first, then `daily_receiver` and, lastly, join with the
-browser application. Make sure the web application is not joined when you run
-`daily_receiver`, because `daily_receiver` reads the custom track from the first
-participant that joins.
+Both apps take the same options:
+
+| Option | Description                                                   |
+|--------|---------------------------------------------------------------|
+| `-m`   | The room URL.                                                 |
+| `-t`   | A meeting token, if the room needs one.                       |
+| `-n`   | The user name to join with (default: `Sender` or `Receiver`). |
+
+Then open `index.html` in your browser, join the same room, and pick the custom
+track you want to hear. Join from the browser last: the receiver mirrors the
+first participant who joins, which has to be the sender.
