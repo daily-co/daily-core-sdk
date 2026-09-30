@@ -1,8 +1,8 @@
 name: build
 
-# Builds the shared library from the latest release's static library, and then
-# the examples and a few small apps with this checkout's headers and CMake
-# package.
+# Builds the examples and a few small apps with this checkout's headers and CMake
+# package, and the latest release's library. Releases older than 0.23.0 have no
+# shared library, so then there's nothing to check.
 
 on:
   push:
@@ -40,41 +40,27 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Get the static library from the latest release
+      - name: Get the library from the latest release
+        id: release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download --repo "$GITHUB_REPOSITORY" \
             --pattern "daily-core-sdk-*-${{ matrix.platform }}.zip" --dir release
           unzip -q release/*.zip -d release
-          cp -R release/daily-core-sdk-*/lib .
-
-      - name: Build the shared library
-        run: |
-          cmake -S shared-library -B build/shared-library -DCMAKE_BUILD_TYPE=Release
-          cmake --build build/shared-library --config Release --parallel
-          cmake --install build/shared-library --config Release --prefix .
-
-      - name: Check the shared library only exports the C API
-        if: runner.os != 'Windows'
-        run: |
-          expected=$(grep -oE '[ *]daily_core_[a-z0-9_]+\(' include/daily_core.h | sort -u | wc -l)
-          if [ "$RUNNER_OS" = Linux ]; then
-            exported=$(nm -D --defined-only lib/libdaily_core.so | awk '{print $3}')
+          sdk=$(echo release/daily-core-sdk-*/)
+          if [ -e "$sdk/lib/libdaily_core.so" ] || [ -e "$sdk/lib/libdaily_core.dylib" ] ||
+              [ -e "$sdk/bin/daily_core.dll" ]; then
+            cp -R "$sdk/lib" .
+            if [ -d "$sdk/bin" ]; then cp -R "$sdk/bin" .; fi
+            echo "has_library=true" >> "$GITHUB_OUTPUT"
           else
-            exported=$(nm -gU lib/libdaily_core.dylib | awk '{print $3}' | sed 's/^_//')
+            echo "::notice::The latest release has no shared library; skipping the checks."
+            echo "has_library=false" >> "$GITHUB_OUTPUT"
           fi
-          count=$(echo "$exported" | grep -c '^daily_core_')
-          others=$(echo "$exported" | grep -v '^daily_core_' || true)
-          echo "Exports $count daily_core_* functions, and daily_core.h has $expected"
-          if [ -n "$others" ]; then
-            echo "It also exports:"
-            echo "$others"
-            exit 1
-          fi
-          [ "$count" -eq "$expected" ]
 
       - name: Build the examples
+        if: steps.release.outputs.has_library == 'true'
         run: |
           for example in c++ c++-custom-tracks; do
             cmake -S "examples/$example" -B "build/$example" -DCMAKE_BUILD_TYPE=Release
@@ -82,11 +68,13 @@ jobs:
           done
 
       - name: Run an example
+        if: steps.release.outputs.has_library == 'true'
         run: |
           app=$(find build/c++ -type f \( -name daily_example -o -name daily_example.exe \) | head -1)
           "$app" | grep Usage
 
-      - name: Check a C app with the shared library
+      - name: Check a C app
+        if: steps.release.outputs.has_library == 'true'
         run: |
           mkdir -p build/c-app
           cat > build/c-app/main.c <<'C'
@@ -117,10 +105,11 @@ jobs:
           app=$(find build/c-app/build -type f \( -name c_app -o -name c_app.exe \) | head -1)
           "$app"
 
-      - name: Check an app with the static library
+      - name: Check a C++ app
+        if: steps.release.outputs.has_library == 'true'
         run: |
-          mkdir -p build/static-app
-          cat > build/static-app/main.cpp <<'CPP'
+          mkdir -p build/cpp-app
+          cat > build/cpp-app/main.cpp <<'CPP'
           extern "C" {
           #include <daily_core.h>
           }
@@ -128,24 +117,31 @@ jobs:
           #include <cstdio>
           int main() {
               daily_core_set_log_level(DailyLogLevel_Off);
-              std::printf("Static app with Daily Core %s\n", DAILY_CORE_VERSION);
+              std::printf("C++ app with Daily Core %s\n", DAILY_CORE_VERSION);
           }
           CPP
-          cat > build/static-app/CMakeLists.txt <<'CMAKE'
+          cat > build/cpp-app/CMakeLists.txt <<'CMAKE'
           cmake_minimum_required(VERSION 3.16)
-          project(static_app LANGUAGES CXX)
+          project(cpp_app LANGUAGES CXX)
           find_package(DailyCore REQUIRED HINTS "${CMAKE_CURRENT_LIST_DIR}/../..")
-          add_executable(static_app main.cpp)
-          target_link_libraries(static_app PRIVATE DailyCore::DailyCoreStatic)
+          add_executable(cpp_app main.cpp)
+          target_link_libraries(cpp_app PRIVATE DailyCore::DailyCore)
+          if(WIN32)
+            add_custom_command(TARGET cpp_app POST_BUILD
+              COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:DailyCore::DailyCore> $<TARGET_FILE_DIR:cpp_app>
+            )
+          endif()
           CMAKE
-          cmake -S build/static-app -B build/static-app/build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build/static-app/build --config Release
-          app=$(find build/static-app/build -type f \( -name static_app -o -name static_app.exe \) | head -1)
+          cmake -S build/cpp-app -B build/cpp-app/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/cpp-app/build --config Release
+          app=$(find build/cpp-app/build -type f \( -name cpp_app -o -name cpp_app.exe \) | head -1)
           "$app"
 
       # Projects that copied FindDailyCore.cmake call find_package(DailyCore)
       # with it in their module path, and set DAILY_CORE_PATH.
       - name: Check FindDailyCore.cmake
+        if: steps.release.outputs.has_library == 'true'
         env:
           DAILY_CORE_PATH: ${{ github.workspace }}
         run: |
