@@ -5,6 +5,23 @@ All notable changes to **daily-core-sdk** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.0] - 2026-10-06
+
+### Fixed
+
+- Fixed selecting virtual audio devices after a call client had left a call:
+  `daily_core_context_select_speaker_device()` failed, and a virtual microphone
+  selected in the inputs was ignored, so the previously selected microphone was
+  still the one recorded. libwebrtc terminates the audio device module when the
+  last peer connection goes away, and it is now initialized again when devices
+  are enumerated or selected.
+
+- Fixed log lines being output regardless of the log level when a call client
+  was released, such as `CallManager event loop terminating`. The logging layer
+  logged from inside its own event handler for calls being torn down, which
+  made the other logging layers skip their filters for the event being
+  handled.
+
 ## [0.23.0] - 2026-09-30
 
 ### Added
