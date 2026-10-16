@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2024-2026, Daily
 #
-# Finds the Daily Core C++ SDK for projects that use find_package(DailyCore)
+# Finds the Daily Core SDK for projects that use find_package(DailyCore)
 # with this file in their CMAKE_MODULE_PATH.
 #
 # New projects don't need this file: point CMAKE_PREFIX_PATH or DailyCore_ROOT

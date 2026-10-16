@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2026, Daily
 #
-# CMake package for the Daily Core C++ SDK. Point CMAKE_PREFIX_PATH or
+# CMake package for the Daily Core SDK. Point CMAKE_PREFIX_PATH or
 # DailyCore_ROOT to the SDK and use:
 #
 #   find_package(DailyCore 0.23 REQUIRED)

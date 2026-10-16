@@ -3,7 +3,7 @@
 #pragma once
 
 /*
- * Version of the Daily Core C++ SDK.
+ * Version of the Daily Core SDK.
  *
  * Only the three numbers below need to change for a release. The string is
  * built from them.
