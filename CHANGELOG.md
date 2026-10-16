@@ -5,6 +5,83 @@ All notable changes to **daily-core-sdk** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.0] - 2026-10-16
+
+### Added
+
+- Added experimental support for `VP9` as a `preferredCodec` on camera, custom
+  video and screen video. VP8 remains the default: VP9 is only used when an
+  application explicitly sets it, and the SFU's router offers VP9. The SFU
+  does not accept VP9 simulcast, so camera and custom video send VP9 as a
+  single SVC encoding (`L3T3_KEY`); the SFU still forwards a spatial layer to
+  each receiver. At the top quality its bitrate is left to libwebrtc's SVC
+  defaults (about 2 Mbps at 720p) and bandwidth estimation; with a lower
+  `maxQuality` it is capped at the total of the simulcast layers up to it.
+  Adaptive layers stay off for VP9, and recording and RTMP streaming do not
+  support VP9 yet. On macOS, libwebrtc is now built with VP9, which it
+  previously left out.
+
+- Added `startBitrate` to the camera, custom video and screen video send
+  settings, so the bitrate the video encoder starts sending at
+  (`x-google-start-bitrate`) can be configured. It is in bits per second and
+  defaults to 1000000, the value previously hardcoded.
+
+- Added `adaptiveLayerMaxBitrate` to the camera send settings: a cap, in bits
+  per second, on the bitrate adaptive bitrate ramps up to. It never goes below
+  200 kbps, the adaptive layer's floor, and can be changed while adaptive
+  bitrate is running. `null` or `"fromDefaults"` removes it.
+
+- Added `connection` to the client settings passed to
+  `daily_core_call_client_join()`, with `initialReceiveBitrate`: your expected
+  download bandwidth, in bits per second. The SFU starts its estimate of what
+  it can send you from this value (1000000 by default), which also sets the
+  first `targetBitrate` other participants get. It is applied on join and on
+  reconnect.
+
+### Changed
+
+- `daily_core.h` now wraps its declarations in `extern "C"` when compiled as
+  C++, so C++ code can include it directly, as the examples now do. Wrapping
+  the include in `extern "C" { ... }` still works.
+
+- `daily_core.h` no longer wraps every declaration in `#if !defined(WASM32)`,
+  and no longer declares the WebAssembly-only `new()`, `add_event_listener()`,
+  `remove_event_listener()` and `emit()` functions. The library never had
+  those, so the API is the same.
+
+### Fixed
+
+- Fixed camera and custom video sent with `preferredCodec` `H265` never being
+  published: the SFU does not accept H265 simulcast and rejected the default
+  encodings. H265 is now sent as a single full-resolution encoding, using the
+  bitrate and frame rate of the highest layer `maxQuality` allows.
+
+- Fixed per-stream bitrates (video and audio, sent and received) being 1,000
+  times too small: libwebrtc reports stats timestamps in microseconds, but the
+  per-stream calculations treated them as milliseconds.
+
+- Fixed send-side call stats always reading 0 with libwebrtc 8010: its stats
+  no longer include the deprecated `mediaType` field, which the outgoing
+  video and audio reports still required, so every stat for the sending
+  connection was discarded.
+
+- Fixed the top simulcast layer not being sent at the start of a call.
+  `maxQuality` was passed to libmediasoupclient off by one, so `high` turned
+  the high layer off, `medium` turned the medium layer off and `low` had no
+  effect. With adaptive layers off, receivers got at most the medium layer
+  (360p for a 720p camera) until the camera track was next updated, for
+  example by switching or toggling the camera. With adaptive layers on, it
+  lasted only until the first adaptive-layer update, a second or two in.
+
+- Fixed video renderer frames with the `I420` color format having a
+  `buffer_size` of `width * height`, the size of the Y plane alone. The U and V
+  planes weren't always right after it either, since decoders such as VP9, AV1
+  and H.264 hand out planes with padded rows. `buffer` now always holds the Y
+  plane, then the U and V planes, in `buffer_size` bytes.
+
+- Fixed `I420` frames with an odd width or height written to a custom video
+  source or a virtual camera being sent with the wrong colors.
+
 ## [0.24.0] - 2026-10-06
 
 ### Fixed
