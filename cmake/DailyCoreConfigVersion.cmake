@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2026, Daily
 #
-# Version of the Daily Core C++ SDK, read from include/daily_core_version.h.
+# Version of the Daily Core SDK, read from include/daily_core_version.h.
 #
 # A newer version with the same major version is compatible, e.g. 0.23.0 is
 # found by find_package(DailyCore 0.22). Version ranges, like

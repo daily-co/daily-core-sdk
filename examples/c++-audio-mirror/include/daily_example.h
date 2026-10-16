@@ -5,10 +5,8 @@
 #ifndef DAILY_EXAMPLE_H
 #define DAILY_EXAMPLE_H
 
-extern "C" {
 #include "daily_core.h"
 #include "daily_core_version.h"
-}
 
 #include <string>
 

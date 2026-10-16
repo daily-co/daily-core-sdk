@@ -1,6 +1,6 @@
-# Daily Core C++ SDK
+# Daily Core SDK
 
-`daily-core-sdk` is a C++ SDK to build native client applications for the
+`daily-core-sdk` is a C/C++ SDK to build native client applications for the
 [Daily](https://daily.co) platform.
 
 It supports Linux (`x86_64` and `aarch64`), macOS (`x86_64` and `aarch64`) and
@@ -99,15 +99,15 @@ gcc main.c -I/path/to/daily-core-sdk/include \
 
 ## 🧪 Examples
 
-- [c++](./examples/c++): joins a room and sends the audio of the first
-  participant who joins back to the room.
+- [c++-audio-mirror](./examples/c++-audio-mirror): joins a room and sends the
+  audio of the first participant who joins back to the room.
 - [c++-custom-tracks](./examples/c++-custom-tracks): sends and receives custom
   audio tracks.
 
 The examples find the SDK they're in, so you can build them right away:
 
 ```bash
-cd examples/c++
+cd examples/c++-audio-mirror
 cmake . -G Ninja -Bbuild -DCMAKE_BUILD_TYPE=Release
 ninja -C build
 ```
