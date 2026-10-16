@@ -19,70 +19,42 @@
 
 #define MODERATE_PACKET_LOSS_THRESHOLD 0.20
 
-#if !defined(WASM32)
 #define MINIMUM_WORKER_THREAD_COUNT 2
-#endif
 
-#if !defined(WASM32)
 typedef enum DailyCallState {
-#if !defined(WASM32)
   DailyCallState_Initialized,
-#endif
-#if !defined(WASM32)
   DailyCallState_Joining,
-#endif
-#if !defined(WASM32)
   DailyCallState_Joined,
-#endif
-#if !defined(WASM32)
   DailyCallState_Leaving,
-#endif
-#if !defined(WASM32)
   DailyCallState_Left,
-#endif
 } DailyCallState;
-#endif
 
-#if !defined(WASM32)
 typedef enum DailyLogLevel {
-#if !defined(WASM32)
   /**
    * A level lower than all log levels.
    */
   DailyLogLevel_Off,
-#endif
-#if !defined(WASM32)
   /**
    * Corresponds to the `Error` log level.
    */
   DailyLogLevel_Error,
-#endif
-#if !defined(WASM32)
   /**
    * Corresponds to the `Warn` log level.
    */
   DailyLogLevel_Warn,
-#endif
-#if !defined(WASM32)
   /**
    * Corresponds to the `Info` log level.
    */
   DailyLogLevel_Info,
-#endif
-#if !defined(WASM32)
   /**
    * Corresponds to the `Debug` log level.
    */
   DailyLogLevel_Debug,
-#endif
-#if !defined(WASM32)
   /**
    * Corresponds to the `Trace` log level.
    */
   DailyLogLevel_Trace,
-#endif
 } DailyLogLevel;
-#endif
 
 /**
  * A Daily call client. This is the main point of interaction of customers
@@ -92,18 +64,13 @@ typedef enum DailyLogLevel {
  */
 typedef struct DailyRawCallClient DailyRawCallClient;
 
-typedef struct Result_bool__JsValue Result_bool__JsValue;
-
-#if !defined(WASM32)
 typedef struct DailyCallClientAppMessageFns {
   void (*send_app_message)(struct DailyRawCallClient *client,
                            uint64_t request_id,
                            const char *message,
                            const char *participant);
 } DailyCallClientAppMessageFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientAudioLevelFns {
   void (*start_remote_participants_audio_level_observer)(struct DailyRawCallClient *client,
                                                          uint64_t request_id,
@@ -115,9 +82,7 @@ typedef struct DailyCallClientAudioLevelFns {
                                            uint64_t interval);
   void (*stop_local_audio_level_observer)(struct DailyRawCallClient *client, uint64_t request_id);
 } DailyCallClientAudioLevelFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientCallStateFns {
   enum DailyCallState (*call_state)(struct DailyRawCallClient *client);
   void (*call_config_for)(struct DailyRawCallClient *client,
@@ -125,9 +90,7 @@ typedef struct DailyCallClientCallStateFns {
                           const char *url,
                           const char *token);
 } DailyCallClientCallStateFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientConnectionFns {
   void (*join)(struct DailyRawCallClient *client,
                uint64_t request_id,
@@ -142,16 +105,12 @@ typedef struct DailyCallClientConnectionFns {
                          uint64_t request_id,
                          const char *ice_config);
 } DailyCallClientConnectionFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientDevicesFns {
   const char *(*available_devices)(struct DailyRawCallClient *client, const char *config);
   void (*trigger_devices_changed)(struct DailyRawCallClient *client);
 } DailyCallClientDevicesFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientInputsFns {
   const char *(*inputs)(struct DailyRawCallClient *client);
   void (*update_inputs)(struct DailyRawCallClient *client,
@@ -182,26 +141,18 @@ typedef struct DailyCallClientInputsFns {
                                     uint64_t request_id,
                                     const char *name);
 } DailyCallClientInputsFns;
-#endif
 
-#if !defined(WASM32)
 typedef void DailyRawCallClientDelegate;
-#endif
 
-#if !defined(WASM32)
 /**
  * Pointer to `CallClient`'s delegate object.
  */
 typedef DailyRawCallClientDelegate *DailyCallClientDelegatePtr;
-#endif
 
-#if !defined(WASM32)
 typedef void (*DailyCallClientOnEventFn)(DailyRawCallClientDelegate *delegate,
                                          const char *event_json,
                                          intptr_t json_len);
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyAudioData {
   uint32_t bits_per_sample;
   uint32_t sample_rate;
@@ -209,16 +160,12 @@ typedef struct DailyAudioData {
   uintptr_t num_audio_frames;
   const uint8_t *audio_frames;
 } DailyAudioData;
-#endif
 
-#if !defined(WASM32)
 typedef void (*DailyCallClientOnAudioDataFn)(DailyRawCallClientDelegate *delegate,
                                              uint64_t renderer_id,
                                              const char *peer_id,
                                              const struct DailyAudioData *audio_data);
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyVideoFrame {
   const uint8_t *buffer;
   uintptr_t buffer_size;
@@ -227,16 +174,12 @@ typedef struct DailyVideoFrame {
   int64_t timestamp_us;
   const char *color_format;
 } DailyVideoFrame;
-#endif
 
-#if !defined(WASM32)
 typedef void (*DailyCallClientOnVideoFrameFn)(DailyRawCallClientDelegate *delegate,
                                               uint64_t renderer_id,
                                               const char *peer_id,
                                               const struct DailyVideoFrame *frame);
-#endif
 
-#if !defined(WASM32)
 /**
  * Functions for integrating Daily with the given native platform.
  */
@@ -245,9 +188,7 @@ typedef struct DailyCallClientDelegateFns {
   DailyCallClientOnAudioDataFn on_audio_data;
   DailyCallClientOnVideoFrameFn on_video_frame;
 } DailyCallClientDelegateFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientDelegate {
   /**
    * The functions' optional context (e.g. receiver).
@@ -258,17 +199,13 @@ typedef struct DailyCallClientDelegate {
    */
   struct DailyCallClientDelegateFns fns;
 } DailyCallClientDelegate;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientLifecycleFns {
   struct DailyRawCallClient *(*create)(void);
   void (*destroy)(struct DailyRawCallClient *client);
   void (*set_delegate)(struct DailyRawCallClient *client, struct DailyCallClientDelegate delegate);
 } DailyCallClientLifecycleFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientLiveStreamFns {
   void (*start_live_stream)(struct DailyRawCallClient *client,
                             uint64_t request_id,
@@ -289,9 +226,7 @@ typedef struct DailyCallClientLiveStreamFns {
                                           const char *endpoints,
                                           const char *stream_id);
 } DailyCallClientLiveStreamFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientParticipantsFns {
   const char *(*participants)(struct DailyRawCallClient *client);
   const char *(*active_speaker)(struct DailyRawCallClient *client);
@@ -303,18 +238,14 @@ typedef struct DailyCallClientParticipantsFns {
                                     uint64_t request_id,
                                     const char *ids);
 } DailyCallClientParticipantsFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientPublishingFns {
   const char *(*publishing)(struct DailyRawCallClient *client);
   void (*update_publishing)(struct DailyRawCallClient *client,
                             uint64_t request_id,
                             const char *publishing_settings);
 } DailyCallClientPublishingFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientRecordingFns {
   void (*start_recording)(struct DailyRawCallClient *client,
                           uint64_t request_id,
@@ -327,9 +258,7 @@ typedef struct DailyCallClientRecordingFns {
                            const char *settings,
                            const char *stream_id);
 } DailyCallClientRecordingFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientSubscriptionsFns {
   const char *(*subscriptions)(struct DailyRawCallClient *client);
   void (*update_subscriptions)(struct DailyRawCallClient *client,
@@ -341,24 +270,18 @@ typedef struct DailyCallClientSubscriptionsFns {
                                        uint64_t request_id,
                                        const char *profile_settings);
 } DailyCallClientSubscriptionsFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientTelemetryFns {
   const char *(*get_network_stats)(struct DailyRawCallClient *client);
 } DailyCallClientTelemetryFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientTranscriptionFns {
   void (*start_transcription)(struct DailyRawCallClient *client,
                               uint64_t request_id,
                               const char *properties);
   void (*stop_transcription)(struct DailyRawCallClient *client, uint64_t request_id);
 } DailyCallClientTranscriptionFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientUserFns {
   void (*set_user_name)(struct DailyRawCallClient *client,
                         uint64_t request_id,
@@ -367,9 +290,7 @@ typedef struct DailyCallClientUserFns {
                              uint64_t request_id,
                              const char *update);
 } DailyCallClientUserFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientFns {
   struct DailyCallClientAppMessageFns app_message;
   struct DailyCallClientAudioLevelFns audio_level;
@@ -387,9 +308,7 @@ typedef struct DailyCallClientFns {
   struct DailyCallClientTranscriptionFns transcription;
   struct DailyCallClientUserFns user;
 } DailyCallClientFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientDialoutFns {
   void (*start_dialout)(struct DailyRawCallClient *client,
                         uint64_t request_id,
@@ -398,57 +317,39 @@ typedef struct DailyCallClientDialoutFns {
                        uint64_t request_id,
                        const char *participant_id);
 } DailyCallClientDialoutFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientSipFns {
   void (*call_transfer)(struct DailyRawCallClient *client,
                         uint64_t request_id,
                         const char *properties);
   void (*refer)(struct DailyRawCallClient *client, uint64_t request_id, const char *properties);
 } DailyCallClientSipFns;
-#endif
 
-#if !defined(WASM32)
 typedef void WebrtcPeerConnectionFactory;
-#endif
 
-#if !defined(WASM32)
 typedef void WebrtcThread;
-#endif
 
-#if !defined(WASM32)
 typedef void DailyRawContextDelegate;
-#endif
 
-#if !defined(WASM32)
 /**
  * Pointer to `Context`'s delegate object.
  */
 typedef DailyRawContextDelegate *DailyContextDelegatePtr;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyContextDelegate {
   /**
    * The functions' optional context (e.g. receiver).
    */
   DailyContextDelegatePtr ptr;
 } DailyContextDelegate;
-#endif
 
-#if !defined(WASM32)
 typedef void DailyRawWebRtcContextDelegate;
-#endif
 
-#if !defined(WASM32)
 /**
  * Pointer to `DailyWebRtcContextDelegate` receiver object.
  */
 typedef DailyRawWebRtcContextDelegate *DailyWebRtcContextDelegatePtr;
-#endif
 
-#if !defined(WASM32)
 /**
  * Platform-provided implementation of `MediaDevices.getUserMedia()`.
  *
@@ -467,9 +368,7 @@ typedef void *(*DailyWebRtcContextDelegateGetUserMediaFn)(DailyRawWebRtcContextD
                                                           WebrtcThread *worker_thread,
                                                           WebrtcThread *network_thread,
                                                           const char *constraints);
-#endif
 
-#if !defined(WASM32)
 /**
  * Platform-provided implementation of `MediaDevices.getDisplayMedia()`.
  *
@@ -486,9 +385,7 @@ typedef void *(*DailyWebRtcContextDelegateGetDisplayMediaFn)(DailyRawWebRtcConte
                                                              WebrtcThread *signaling_thread,
                                                              WebrtcThread *worker_thread,
                                                              WebrtcThread *network_thread);
-#endif
 
-#if !defined(WASM32)
 /**
  * Platform-provided implementation of `MediaDevices.enumerateDevices()`.
  *
@@ -505,73 +402,43 @@ typedef void *(*DailyWebRtcContextDelegateGetDisplayMediaFn)(DailyRawWebRtcConte
  * ```
  */
 typedef char *(*DailyWebRtcContextDelegateGetEnumeratedDevicesFn)(DailyRawWebRtcContextDelegate *delegate);
-#endif
 
-#if !defined(WASM32)
 typedef void WebrtcAudioDeviceModule;
-#endif
 
-#if !defined(WASM32)
 typedef void WebrtcTaskQueueFactory;
-#endif
 
-#if !defined(WASM32)
 typedef WebrtcAudioDeviceModule *(*DailyWebRtcContextDelegateCreateAudioDeviceModuleFn)(DailyRawWebRtcContextDelegate *delegate,
                                                                                         WebrtcTaskQueueFactory *task_queue_factory);
-#endif
 
-#if !defined(WASM32)
 typedef void WebrtcVideoDecoderFactory;
-#endif
 
-#if !defined(WASM32)
 typedef WebrtcVideoDecoderFactory *(*DailyWebRtcContextDelegateCreateVideoDecoderFactoryFn)(DailyRawWebRtcContextDelegate *delegate);
-#endif
 
-#if !defined(WASM32)
 typedef void WebrtcVideoEncoderFactory;
-#endif
 
-#if !defined(WASM32)
 typedef WebrtcVideoEncoderFactory *(*DailyWebRtcContextDelegateCreateVideoEncoderFactoryFn)(DailyRawWebRtcContextDelegate *delegate);
-#endif
 
-#if !defined(WASM32)
 typedef void WebrtcAudioDecoderFactory;
-#endif
 
-#if !defined(WASM32)
 typedef WebrtcAudioDecoderFactory *(*DailyWebRtcContextDelegateCreateAudioDecoderFactoryFn)(DailyRawWebRtcContextDelegate *delegate);
-#endif
 
-#if !defined(WASM32)
 typedef void WebrtcAudioEncoderFactory;
-#endif
 
-#if !defined(WASM32)
 typedef WebrtcAudioEncoderFactory *(*DailyWebRtcContextDelegateCreateAudioEncoderFactoryFn)(DailyRawWebRtcContextDelegate *delegate);
-#endif
 
-#if !defined(WASM32)
 /**
  * Platform-provided implementation of `getAudioDevice`.
  */
 typedef const char *(*DailyWebRtcContextDelegateGetAudioDeviceFn)(DailyRawWebRtcContextDelegate *delegate);
-#endif
 
-#if !defined(WASM32)
 /**
  * Platform-provided implementation of `setAudioDevice`.
  */
 typedef void (*DailyWebRtcContextDelegateSetAudioDeviceFn)(DailyRawWebRtcContextDelegate *delegate,
                                                            const char *device_id);
-#endif
 
-#if !defined(WASM32)
 typedef const char *(*DailyWebRtcContextDelegateGetIgnoredNetworkDevicesFn)(DailyRawWebRtcContextDelegate *delegate);
-#endif
 
-#if !defined(WASM32)
 /**
  * Functions for integrating Daily with the given native platform.
  */
@@ -618,9 +485,7 @@ typedef struct DailyWebRtcContextDelegateFns {
    */
   DailyWebRtcContextDelegateGetIgnoredNetworkDevicesFn get_ignored_network_devices;
 } DailyWebRtcContextDelegateFns;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyWebRtcContextDelegate {
   /**
    * The functions' optional context (e.g. receiver).
@@ -631,9 +496,7 @@ typedef struct DailyWebRtcContextDelegate {
    */
   struct DailyWebRtcContextDelegateFns fns;
 } DailyWebRtcContextDelegate;
-#endif
 
-#if !defined(WASM32)
 /**
  * Information about the daily-x client library (e.g. daily-ios).
  */
@@ -659,70 +522,40 @@ typedef struct DailyAboutClient {
    */
   const char *app_package_name;
 } DailyAboutClient;
-#endif
 
-#if !defined(WASM32)
 typedef void DailyAudioSource;
-#endif
 
-#if !defined(WASM32)
 typedef void DailyRawAudioSenderDelegate;
-#endif
 
-#if !defined(WASM32)
 typedef void (*DailyAudioSenderOnWriteFramesFn)(DailyRawAudioSenderDelegate *delegate,
                                                 uint64_t request_id,
                                                 uintptr_t num_frames);
-#endif
 
-#if !defined(WASM32)
 typedef void DailyAudioTrack;
-#endif
 
-#if !defined(WASM32)
 typedef void DailyVideoSource;
-#endif
 
-#if !defined(WASM32)
 typedef void DailyVideoTrack;
-#endif
 
-#if !defined(WASM32)
 typedef void DailyDeviceManager;
-#endif
 
-#if !defined(WASM32)
 typedef void WebrtcMediaStream;
-#endif
 
-#if !defined(WASM32)
 typedef void DailyVirtualCameraDevice;
-#endif
 
-#if !defined(WASM32)
 typedef void DailyVirtualSpeakerDevice;
-#endif
 
-#if !defined(WASM32)
 typedef void DailyVirtualMicrophoneDevice;
-#endif
 
-#if !defined(WASM32)
 typedef void DailyRawVirtualSpeakerDeviceDelegate;
-#endif
 
-#if !defined(WASM32)
 typedef void (*DailyVirtualSpeakerDeviceOnReadFramesFn)(DailyRawVirtualSpeakerDeviceDelegate *delegate,
                                                         uint64_t request_id,
                                                         int16_t *frames,
                                                         uintptr_t num_frames);
-#endif
 
-#if !defined(WASM32)
 typedef void DailyVad;
-#endif
 
-#if !defined(WASM32)
 typedef struct DailyCallClientInterface {
   /**
    * The functions' optional context (e.g. receiver).
@@ -733,39 +566,15 @@ typedef struct DailyCallClientInterface {
    */
   struct DailyCallClientFns fns;
 } DailyCallClientInterface;
-#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-#if defined(WASM32)
-extern EventEmitter new(void);
-#endif
-
-#if defined(WASM32)
-extern JsValue add_event_listener(const EventEmitter *this_, const str *event, const Function *f);
-#endif
-
-#if defined(WASM32)
-extern JsValue remove_event_listener(const EventEmitter *this_,
-                                     const str *event,
-                                     const Function *f);
-#endif
-
-#if defined(WASM32)
-extern struct Result_bool__JsValue emit(const EventEmitter *this_, const str *event, JsValue data);
-#endif
-
-#if !defined(WASM32)
 struct DailyCallClientFns daily_core_call_client_fns(void);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientAppMessageFns daily_core_call_client_app_message_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Send a custom app message
  */
@@ -773,9 +582,7 @@ void daily_core_call_client_send_app_message(struct DailyRawCallClient *client,
                                              uint64_t request_id,
                                              const char *message,
                                              const char *participant);
-#endif
 
-#if !defined(WASM32)
 /**
  * Send a prebuilt chat message
  */
@@ -784,46 +591,30 @@ void daily_core_call_client_send_prebuilt_chat_message(struct DailyRawCallClient
                                                        const char *message,
                                                        const char *name,
                                                        const char *room);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientAudioLevelFns daily_core_call_client_audio_level_fns(void);
-#endif
 
-#if !defined(WASM32)
 void daily_core_call_client_start_remote_participants_audio_level_observer(struct DailyRawCallClient *client,
                                                                            uint64_t request_id,
                                                                            uint64_t interval);
-#endif
 
-#if !defined(WASM32)
 void daily_core_call_client_stop_remote_participants_audio_level_observer(struct DailyRawCallClient *client,
                                                                           uint64_t request_id);
-#endif
 
-#if !defined(WASM32)
 void daily_core_call_client_start_local_audio_level_observer(struct DailyRawCallClient *client,
                                                              uint64_t request_id,
                                                              uint64_t interval);
-#endif
 
-#if !defined(WASM32)
 void daily_core_call_client_stop_local_audio_level_observer(struct DailyRawCallClient *client,
                                                             uint64_t request_id);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientCallStateFns daily_core_call_client_call_state_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Obtain the current call state
  */
 enum DailyCallState daily_core_call_client_call_state(struct DailyRawCallClient *client);
-#endif
 
-#if !defined(WASM32)
 /**
  * Retrieve the call config for a given URL and optional token
  */
@@ -831,13 +622,9 @@ void daily_core_call_client_call_config_for(struct DailyRawCallClient *client,
                                             uint64_t request_id,
                                             const char *url,
                                             const char *token);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientConnectionFns daily_core_call_client_connection_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Connects to a call with the given URL and client settings.
  * This function can fail if the URL or settings are not valid, and
@@ -852,9 +639,7 @@ void daily_core_call_client_join(struct DailyRawCallClient *client,
                                  const char *url,
                                  const char *token,
                                  const char *client_settings);
-#endif
 
-#if !defined(WASM32)
 /**
  * Leave the current Daily call
  * # Safety
@@ -862,9 +647,7 @@ void daily_core_call_client_join(struct DailyRawCallClient *client,
  */
 void daily_core_call_client_leave(struct DailyRawCallClient *client,
                                   uint64_t request_id);
-#endif
 
-#if !defined(WASM32)
 /**
  * For users whose firewall policies prevent them from directly accessing
  * Daily’s web domains, using a proxy url provide a mechanism to send connections
@@ -873,22 +656,16 @@ void daily_core_call_client_leave(struct DailyRawCallClient *client,
 void daily_core_call_client_set_proxy_url(struct DailyRawCallClient *client,
                                           uint64_t request_id,
                                           const char *proxy_url);
-#endif
 
-#if !defined(WASM32)
 /**
  * Allows for specifying custom TURN servers rather than only using Daily's default TURN servers.
  */
 void daily_core_call_client_set_ice_config(struct DailyRawCallClient *client,
                                            uint64_t request_id,
                                            const char *ice_config);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientDevicesFns daily_core_call_client_devices_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Obtain the media devices available to the call client
  *
@@ -900,48 +677,34 @@ struct DailyCallClientDevicesFns daily_core_call_client_devices_fns(void);
  */
 const char *daily_core_call_client_available_devices(struct DailyRawCallClient *client,
                                                      const char *config);
-#endif
 
-#if !defined(WASM32)
 void daily_core_call_client_trigger_devices_changed(struct DailyRawCallClient *client);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientDialoutFns daily_core_call_client_dialout_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Start a dial-out to SIP or PSTN.
  */
 void daily_core_call_client_start_dialout(struct DailyRawCallClient *client,
                                           uint64_t request_id,
                                           const char *properties);
-#endif
 
-#if !defined(WASM32)
 /**
  * Stop an existing dial-out session.
  */
 void daily_core_call_client_stop_dialout(struct DailyRawCallClient *client,
                                          uint64_t request_id,
                                          const char *participant_id);
-#endif
 
-#if !defined(WASM32)
 /**
  * Send DTMF tones in a dial-out session.
  */
 void daily_core_call_client_send_dtmf(struct DailyRawCallClient *client,
                                       uint64_t request_id,
                                       const char *properties);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientInputsFns daily_core_call_client_inputs_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Obtain the currently desired input settings
  *
@@ -953,9 +716,7 @@ struct DailyCallClientInputsFns daily_core_call_client_inputs_fns(void);
  * to a `const char *` (or `nullptr`)
  */
 const char *daily_core_call_client_inputs(struct DailyRawCallClient *client);
-#endif
 
-#if !defined(WASM32)
 /**
  * Update the desired input settings for this call
  * # Safety
@@ -965,9 +726,7 @@ const char *daily_core_call_client_inputs(struct DailyRawCallClient *client);
 void daily_core_call_client_update_inputs(struct DailyRawCallClient *client,
                                           uint64_t request_id,
                                           const char *input_settings);
-#endif
 
-#if !defined(WASM32)
 /**
  * Adds a custom video track
  * # Safety
@@ -978,9 +737,7 @@ void daily_core_call_client_add_custom_video_track(struct DailyRawCallClient *cl
                                                    uint64_t request_id,
                                                    const char *name,
                                                    const void *track_ptr);
-#endif
 
-#if !defined(WASM32)
 /**
  * Updates a custom video track
  * # Safety
@@ -991,9 +748,7 @@ void daily_core_call_client_update_custom_video_track(struct DailyRawCallClient 
                                                       uint64_t request_id,
                                                       const char *name,
                                                       const void *track_ptr);
-#endif
 
-#if !defined(WASM32)
 /**
  * Removes a custom video track
  * # Safety
@@ -1003,9 +758,7 @@ void daily_core_call_client_update_custom_video_track(struct DailyRawCallClient 
 void daily_core_call_client_remove_custom_video_track(struct DailyRawCallClient *client,
                                                       uint64_t request_id,
                                                       const char *name);
-#endif
 
-#if !defined(WASM32)
 /**
  * Adds a custom audio track
  * # Safety
@@ -1017,9 +770,7 @@ void daily_core_call_client_add_custom_audio_track(struct DailyRawCallClient *cl
                                                    const char *name,
                                                    const void *track_ptr,
                                                    int32_t ignore_audio_level);
-#endif
 
-#if !defined(WASM32)
 /**
  * Updates a custom audio track
  * # Safety
@@ -1031,9 +782,7 @@ void daily_core_call_client_update_custom_audio_track(struct DailyRawCallClient 
                                                       const char *name,
                                                       const void *track_ptr,
                                                       int32_t ignore_audio_level);
-#endif
 
-#if !defined(WASM32)
 /**
  * Removes a custom audio track
  * # Safety
@@ -1043,22 +792,16 @@ void daily_core_call_client_update_custom_audio_track(struct DailyRawCallClient 
 void daily_core_call_client_remove_custom_audio_track(struct DailyRawCallClient *client,
                                                       uint64_t request_id,
                                                       const char *name);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientLifecycleFns daily_core_call_client_lifecycle_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Create a new instance of a Daily call client.
  * # Safety
  * Invoking this call prior to [daily_core_context_create] or after [daily_core_context_destroy] will result in a crash
  */
 struct DailyRawCallClient *daily_core_call_client_create(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Teardown a Daily call client instance.
  * # Safety
@@ -1066,9 +809,7 @@ struct DailyRawCallClient *daily_core_call_client_create(void);
  * previously constructed `DailyCallClient`
  */
 void daily_core_call_client_destroy(struct DailyRawCallClient *client);
-#endif
 
-#if !defined(WASM32)
 /**
  * Register an [EventListener] to receive all events from Daily Core.
  * If another event listener has been set previously, it will be replaced.
@@ -1077,31 +818,23 @@ void daily_core_call_client_destroy(struct DailyRawCallClient *client);
  */
 void daily_core_call_client_set_delegate(struct DailyRawCallClient *client,
                                          struct DailyCallClientDelegate delegate);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientLiveStreamFns daily_core_call_client_live_stream_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Start a live stream
  */
 void daily_core_call_client_start_live_stream(struct DailyRawCallClient *client,
                                               uint64_t request_id,
                                               const char *properties);
-#endif
 
-#if !defined(WASM32)
 /**
  * Stop a live stream
  */
 void daily_core_call_client_stop_live_stream(struct DailyRawCallClient *client,
                                              uint64_t request_id,
                                              const char *stream_id);
-#endif
 
-#if !defined(WASM32)
 /**
  * Update a live stream
  */
@@ -1109,9 +842,7 @@ void daily_core_call_client_update_live_stream(struct DailyRawCallClient *client
                                                uint64_t request_id,
                                                const char *settings,
                                                const char *stream_id);
-#endif
 
-#if !defined(WASM32)
 /**
  * Add a new endpoints for a live stream
  */
@@ -1119,9 +850,7 @@ void daily_core_call_client_add_live_streaming_endpoints(struct DailyRawCallClie
                                                          uint64_t request_id,
                                                          const char *endpoints,
                                                          const char *stream_id);
-#endif
 
-#if !defined(WASM32)
 /**
  * Remove endpoints from a live stream
  */
@@ -1129,13 +858,9 @@ void daily_core_call_client_remove_live_streaming_endpoints(struct DailyRawCallC
                                                             uint64_t request_id,
                                                             const char *endpoints,
                                                             const char *stream_id);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientParticipantsFns daily_core_call_client_participants_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Obtain the current participants in the call
  *
@@ -1143,9 +868,7 @@ struct DailyCallClientParticipantsFns daily_core_call_client_participants_fns(vo
  * [daily_core_string_free].
  */
 const char *daily_core_call_client_participants(struct DailyRawCallClient *client);
-#endif
 
-#if !defined(WASM32)
 /**
  * Obtain the current active speaker in the call
  *
@@ -1153,9 +876,7 @@ const char *daily_core_call_client_participants(struct DailyRawCallClient *clien
  * [daily_core_string_free].
  */
 const char *daily_core_call_client_active_speaker(struct DailyRawCallClient *client);
-#endif
 
-#if !defined(WASM32)
 /**
  * Obtain the participant counts in the call
  *
@@ -1163,9 +884,7 @@ const char *daily_core_call_client_active_speaker(struct DailyRawCallClient *cli
  * [daily_core_string_free].
  */
 const char *daily_core_call_client_participant_counts(struct DailyRawCallClient *client);
-#endif
 
-#if !defined(WASM32)
 /**
  * Modify things about remote participants that you can control as a meeting
  * owner.
@@ -1173,18 +892,14 @@ const char *daily_core_call_client_participant_counts(struct DailyRawCallClient 
 void daily_core_call_client_update_remote_participants(struct DailyRawCallClient *client,
                                                        uint64_t request_id,
                                                        const char *updates_by_id);
-#endif
 
-#if !defined(WASM32)
 /**
  * Eject remote participants.
  */
 void daily_core_call_client_eject_remote_participants(struct DailyRawCallClient *client,
                                                       uint64_t request_id,
                                                       const char *ids);
-#endif
 
-#if !defined(WASM32)
 /**
  * Register an audio renderer to receive participant audio data for the given
  * audio source (microphone, screenAudio, ...) from Daily Core. If another
@@ -1199,9 +914,7 @@ void daily_core_call_client_set_participant_audio_renderer(struct DailyRawCallCl
                                                            const char *participant_id,
                                                            const char *audio_source,
                                                            uint32_t sample_rate);
-#endif
 
-#if !defined(WASM32)
 /**
  * Register a video renderer to receive participant frames for the given video
  * source (camera, screenVideo, ...) from Daily Core. If another renderer ID
@@ -1216,13 +929,9 @@ void daily_core_call_client_set_participant_video_renderer(struct DailyRawCallCl
                                                            const char *participant_id,
                                                            const char *video_source,
                                                            const char *color_format);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientPublishingFns daily_core_call_client_publishing_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Obtain the current publishing settings for this call
  *
@@ -1234,9 +943,7 @@ struct DailyCallClientPublishingFns daily_core_call_client_publishing_fns(void);
  * to a `const char *` (or `nullptr`)
  */
 const char *daily_core_call_client_publishing(struct DailyRawCallClient *client);
-#endif
 
-#if !defined(WASM32)
 /**
  * Update the desired publishing settings for this call
  * # Safety
@@ -1246,31 +953,23 @@ const char *daily_core_call_client_publishing(struct DailyRawCallClient *client)
 void daily_core_call_client_update_publishing(struct DailyRawCallClient *client,
                                               uint64_t request_id,
                                               const char *publishing_settings);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientRecordingFns daily_core_call_client_recording_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Start a recording
  */
 void daily_core_call_client_start_recording(struct DailyRawCallClient *client,
                                             uint64_t request_id,
                                             const char *properties);
-#endif
 
-#if !defined(WASM32)
 /**
  * Stop a recording
  */
 void daily_core_call_client_stop_recording(struct DailyRawCallClient *client,
                                            uint64_t request_id,
                                            const char *stream_id);
-#endif
 
-#if !defined(WASM32)
 /**
  * Update a recording
  */
@@ -1278,13 +977,9 @@ void daily_core_call_client_update_recording(struct DailyRawCallClient *client,
                                              uint64_t request_id,
                                              const char *settings,
                                              const char *stream_id);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientSipFns daily_core_call_client_sip_call_transfer_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Transfer a SIP dial-in call from one Daily room to another Daily
  * room. Alternatively, transfer an initiated SIP/PSTN Dialout to another SIP
@@ -1293,22 +988,16 @@ struct DailyCallClientSipFns daily_core_call_client_sip_call_transfer_fns(void);
 void daily_core_call_client_sip_call_transfer(struct DailyRawCallClient *client,
                                               uint64_t request_id,
                                               const char *properties);
-#endif
 
-#if !defined(WASM32)
 /**
  * Transfer a SIP dial-in call to another SIP endpoint outside Daily.
  */
 void daily_core_call_client_sip_refer(struct DailyRawCallClient *client,
                                       uint64_t request_id,
                                       const char *properties);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientSubscriptionsFns daily_core_call_client_subscriptions_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Obtain the current subscription settings
  *
@@ -1316,9 +1005,7 @@ struct DailyCallClientSubscriptionsFns daily_core_call_client_subscriptions_fns(
  * [daily_core_string_free].
  */
 const char *daily_core_call_client_subscriptions(struct DailyRawCallClient *client);
-#endif
 
-#if !defined(WASM32)
 /**
  * Update the desired subscription settings for this call
  * # Safety
@@ -1329,9 +1016,7 @@ void daily_core_call_client_update_subscriptions(struct DailyRawCallClient *clie
                                                  uint64_t request_id,
                                                  const char *participant_settings,
                                                  const char *profile_settings);
-#endif
 
-#if !defined(WASM32)
 /**
  * Obtain the current subscription profiles
  *
@@ -1339,9 +1024,7 @@ void daily_core_call_client_update_subscriptions(struct DailyRawCallClient *clie
  * [daily_core_string_free].
  */
 const char *daily_core_call_client_subscription_profiles(struct DailyRawCallClient *client);
-#endif
 
-#if !defined(WASM32)
 /**
  * Update the current subscription profiles
  * # Safety
@@ -1351,13 +1034,9 @@ const char *daily_core_call_client_subscription_profiles(struct DailyRawCallClie
 void daily_core_call_client_update_subscription_profiles(struct DailyRawCallClient *client,
                                                          uint64_t request_id,
                                                          const char *profile_settings);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientTelemetryFns daily_core_call_client_telemetry_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Obtain the network stats of the call
  *
@@ -1365,30 +1044,22 @@ struct DailyCallClientTelemetryFns daily_core_call_client_telemetry_fns(void);
  * [daily_core_string_free].
  */
 const char *daily_core_call_client_get_network_stats(struct DailyRawCallClient *client);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientTranscriptionFns daily_core_call_client_transcription_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Start a transcription
  */
 void daily_core_call_client_start_transcription(struct DailyRawCallClient *client,
                                                 uint64_t request_id,
                                                 const char *properties);
-#endif
 
-#if !defined(WASM32)
 /**
  * Stop a transcription
  */
 void daily_core_call_client_stop_transcription(struct DailyRawCallClient *client,
                                                uint64_t request_id);
-#endif
 
-#if !defined(WASM32)
 /**
  * Update a transcription
  */
@@ -1396,70 +1067,50 @@ void daily_core_call_client_update_transcription(struct DailyRawCallClient *clie
                                                  uint64_t request_id,
                                                  const char *participants,
                                                  const char *instance_id);
-#endif
 
-#if !defined(WASM32)
 struct DailyCallClientUserFns daily_core_call_client_user_fns(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Set the username
  */
 void daily_core_call_client_set_user_name(struct DailyRawCallClient *client,
                                           uint64_t request_id,
                                           const char *user_name);
-#endif
 
-#if !defined(WASM32)
 /**
  * Modify your own permissions
  */
 void daily_core_call_client_update_permissions(struct DailyRawCallClient *client,
                                                uint64_t request_id,
                                                const char *update);
-#endif
 
-#if !defined(WASM32)
 /**
  * Returns a borrowed pointer to the WebRTC `PeerConnectionFactory`.
  */
 WebrtcPeerConnectionFactory *daily_core_context_peer_connection_factory(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Returns a borrowed pointer to the WebRTC network thread.
  */
 WebrtcThread *daily_core_context_network_thread(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Returns a borrowed pointer to the WebRTC worker thread.
  */
 WebrtcThread *daily_core_context_worker_thread(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Returns a borrowed pointer to the WebRTC signaling thread.
  */
 WebrtcThread *daily_core_context_signaling_thread(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Converts a string containing a pointer value into a track pointer.
  */
 void *daily_core_context_track_retained(const char *id_ptr);
-#endif
 
-#if !defined(WASM32)
 void daily_core_context_track_release(void *ptr);
-#endif
 
-#if !defined(WASM32)
 /**
  * Creates a backing execution context.
  *
@@ -1477,9 +1128,7 @@ void daily_core_context_track_release(void *ptr);
 void daily_core_context_create(struct DailyContextDelegate delegate,
                                struct DailyWebRtcContextDelegate webrtc_delegate,
                                struct DailyAboutClient about_client);
-#endif
 
-#if !defined(WASM32)
 /**
  * This function is identical to [daily_core_context_create], but allows
  * for customizing the number of worker threads available to the execution
@@ -1489,9 +1138,7 @@ void daily_core_context_create_with_threads(struct DailyContextDelegate delegate
                                             struct DailyWebRtcContextDelegate webrtc_delegate,
                                             struct DailyAboutClient about_client,
                                             uintptr_t worker_threads);
-#endif
 
-#if !defined(WASM32)
 /**
  * Destroys the backing execution context created via [daily_core_context_create].
  *
@@ -1499,16 +1146,12 @@ void daily_core_context_create_with_threads(struct DailyContextDelegate delegate
  * termination and/or after the last call-client has been destroyed (if desirable).
  */
 void daily_core_context_destroy(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Creates a custom audio source, which makes it possible to send audio frames.
  */
 DailyAudioSource *daily_core_context_create_custom_audio_source(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Creates a custom audio source for the given sample rate and number of
  * channels. This audio source sends silence while the user is not writing any
@@ -1516,9 +1159,7 @@ DailyAudioSource *daily_core_context_create_custom_audio_source(void);
  */
 DailyAudioSource *daily_core_context_create_custom_audio_source_with_silence(int32_t sample_rate,
                                                                              uintptr_t number_of_channels);
-#endif
 
-#if !defined(WASM32)
 /**
  * Writes audio frames to a custom audio source created with
  * [daily_core_context_create_custom_audio_source]. This function is
@@ -1530,9 +1171,7 @@ void daily_core_context_custom_audio_source_write_frames(DailyAudioSource *daily
                                                          int32_t sample_rate,
                                                          uintptr_t number_of_channels,
                                                          uintptr_t num_frames);
-#endif
 
-#if !defined(WASM32)
 /**
  * Writes audio frames to a custom audio source created with
  * [daily_core_context_create_custom_audio_source]. This function blocks until
@@ -1544,9 +1183,7 @@ int32_t daily_core_context_custom_audio_source_write_frames_sync(DailyAudioSourc
                                                                  int32_t sample_rate,
                                                                  uintptr_t number_of_channels,
                                                                  uintptr_t num_frames);
-#endif
 
-#if !defined(WASM32)
 /**
  * Writes audio frames to a custom audio source created with
  * [daily_core_context_create_custom_audio_source]. This function is
@@ -1562,9 +1199,7 @@ int32_t daily_core_context_custom_audio_source_write_frames_async(DailyAudioSour
                                                                   uint64_t request_id,
                                                                   DailyAudioSenderOnWriteFramesFn callback,
                                                                   DailyRawAudioSenderDelegate *callback_target);
-#endif
 
-#if !defined(WASM32)
 /**
  * Creates a custom audio track. Custom audio tracks need a custom audio source
  * to write audio frames. Custom audio sources can be created with
@@ -1574,23 +1209,17 @@ int32_t daily_core_context_custom_audio_source_write_frames_async(DailyAudioSour
  * main microphone track.
  */
 const DailyAudioTrack *daily_core_context_create_custom_audio_track(DailyAudioSource *audio_source);
-#endif
 
-#if !defined(WASM32)
 /**
  * Destroys a custom audio track.
  */
 void daily_core_context_destroy_custom_audio_track(DailyAudioTrack *audio_track);
-#endif
 
-#if !defined(WASM32)
 /**
  * Creates a custom video source, which makes it possible to send video frames.
  */
 DailyVideoSource *daily_core_context_create_custom_video_source(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Writes a video frame to a custom video source created with
  * [daily_core_context_create_custom_video_source].
@@ -1601,25 +1230,19 @@ void daily_core_context_custom_video_source_write_frame(DailyVideoSource *video_
                                                         int32_t width,
                                                         int32_t height,
                                                         const char *color_format);
-#endif
 
-#if !defined(WASM32)
 /**
  * Creates a custom video track. Custom video tracks need a custom video source
  * to write video frames. Custom video sources can be created with
  * [daily_core_context_create_custom_video_source].
  */
 const DailyVideoTrack *daily_core_context_create_custom_video_track(DailyVideoSource *video_source);
-#endif
 
-#if !defined(WASM32)
 /**
  * Destroys a custom video track.
  */
 void daily_core_context_destroy_custom_video_track(DailyVideoTrack *video_track);
-#endif
 
-#if !defined(WASM32)
 /**
  * Returns the id of the given audio track.
  *
@@ -1627,9 +1250,7 @@ void daily_core_context_destroy_custom_video_track(DailyVideoTrack *video_track)
  * [daily_core_string_free].
  */
 const char *daily_core_context_custom_audio_track_id(DailyAudioTrack *audio_track);
-#endif
 
-#if !defined(WASM32)
 /**
  * Returns the id of the given video track.
  *
@@ -1637,9 +1258,7 @@ const char *daily_core_context_custom_audio_track_id(DailyAudioTrack *audio_trac
  * [daily_core_string_free].
  */
 const char *daily_core_context_custom_video_track_id(DailyVideoTrack *video_track);
-#endif
 
-#if !defined(WASM32)
 /**
  * Creates a device manager. The device manager can handle system and virtual
  * devices. New virtual devices can be added with
@@ -1648,9 +1267,7 @@ const char *daily_core_context_custom_video_track_id(DailyVideoTrack *video_trac
  * [daily_core_context_create_virtual_speaker_device].
  */
 DailyDeviceManager *daily_core_context_create_device_manager(void);
-#endif
 
-#if !defined(WASM32)
 /**
  * Creates a virtual audio device module. New virtual audio devices
  * (microphones and speakers) can then be added.
@@ -1661,9 +1278,7 @@ DailyDeviceManager *daily_core_context_create_device_manager(void);
  */
 WebrtcAudioDeviceModule *daily_core_context_create_audio_device_module(DailyDeviceManager *device_manager,
                                                                        WebrtcTaskQueueFactory *task_queue_factory);
-#endif
 
-#if !defined(WASM32)
 /**
  * Implements enumeratedDevices for a previously created device manager.
  *
@@ -1671,9 +1286,7 @@ WebrtcAudioDeviceModule *daily_core_context_create_audio_device_module(DailyDevi
  * [daily_core_string_free].
  */
 char *daily_core_context_device_manager_enumerated_devices(const DailyDeviceManager *device_manager);
-#endif
 
-#if !defined(WASM32)
 /**
  * Implements getUserMedia for a previously created device manager. It is meant
  * to be used for system and virtual devices. For example, a new virtual
@@ -1688,9 +1301,7 @@ WebrtcMediaStream *daily_core_context_device_manager_get_user_media(DailyDeviceM
                                                                     WebrtcThread *worker_thread,
                                                                     WebrtcThread *network_thread,
                                                                     const char *constraints);
-#endif
 
-#if !defined(WASM32)
 /**
  * Creates a virtual camera device. This virtual camera device can be used to
  * send video frames to the meeting. The resolution (width and height) and
@@ -1705,9 +1316,7 @@ DailyVirtualCameraDevice *daily_core_context_create_virtual_camera_device(DailyD
                                                                           uint32_t width,
                                                                           uint32_t height,
                                                                           const char *color_format);
-#endif
 
-#if !defined(WASM32)
 /**
  * Writes a video frame to a virtual camera device created with
  * [daily_core_context_create_virtual_camera_device]. The video frame
@@ -1717,9 +1326,7 @@ DailyVirtualCameraDevice *daily_core_context_create_virtual_camera_device(DailyD
 void daily_core_context_virtual_camera_device_write_frame(DailyVirtualCameraDevice *device,
                                                           const uint8_t *frame,
                                                           uintptr_t size);
-#endif
 
-#if !defined(WASM32)
 /**
  * Creates a virtual speaker device. A virtual speaker device can be used to
  * receive audio from the meeting. If you need to capture audio from individual
@@ -1736,9 +1343,7 @@ DailyVirtualSpeakerDevice *daily_core_context_create_virtual_speaker_device(Dail
                                                                             uint32_t sample_rate,
                                                                             uint8_t channels,
                                                                             bool non_blocking);
-#endif
 
-#if !defined(WASM32)
 /**
  * Creates a virtual microphone device. A virtual microphone device can be used
  * to send audio samples to the meeting.
@@ -1756,9 +1361,7 @@ DailyVirtualMicrophoneDevice *daily_core_context_create_virtual_microphone_devic
                                                                                   uint32_t sample_rate,
                                                                                   uint8_t channels,
                                                                                   bool non_blocking);
-#endif
 
-#if !defined(WASM32)
 /**
  * Selects the given speaker device as the system's active speaker device. This
  * can be a system or a virtual speaker. Returns true if the device was
@@ -1766,25 +1369,19 @@ DailyVirtualMicrophoneDevice *daily_core_context_create_virtual_microphone_devic
  */
 bool daily_core_context_select_speaker_device(DailyDeviceManager *device_manager,
                                               const char *device_name);
-#endif
 
-#if !defined(WASM32)
 /**
  * Returns the current selected speaker device or NULL if no device is selected
  * yet.
  */
 DailyVirtualSpeakerDevice *daily_core_context_get_selected_speaker_device(const DailyDeviceManager *device_manager);
-#endif
 
-#if !defined(WASM32)
 /**
  * Returns the current selected microphone device or NULL if no device is
  * selected yet.
  */
 DailyVirtualMicrophoneDevice *daily_core_context_get_selected_microphone_device(const DailyDeviceManager *device_manager);
-#endif
 
-#if !defined(WASM32)
 /**
  * Read audio frames from a virtual speaker device created with
  * [daily_core_context_create_virtual_speaker_device]. Returns the number of
@@ -1796,9 +1393,7 @@ int32_t daily_core_context_virtual_speaker_device_read_frames(DailyVirtualSpeake
                                                               uint64_t request_id,
                                                               DailyVirtualSpeakerDeviceOnReadFramesFn callback,
                                                               DailyRawVirtualSpeakerDeviceDelegate *callback_target);
-#endif
 
-#if !defined(WASM32)
 /**
  * Writes audio frames to a virtual microphone device created with
  * [daily_core_context_create_virtual_microphone_device]. Returns the number of
@@ -1810,33 +1405,25 @@ int32_t daily_core_context_virtual_microphone_device_write_frames(DailyVirtualMi
                                                                   uint64_t request_id,
                                                                   DailyAudioSenderOnWriteFramesFn callback,
                                                                   DailyRawAudioSenderDelegate *callback_target);
-#endif
 
-#if !defined(WASM32)
 /**
  * Creates a native VAD analyzer. VADs are used to detect speech.
  */
 DailyVad *daily_core_context_create_vad(uint32_t reset_period_ms,
                                         uint32_t sample_rate,
                                         uint8_t channels);
-#endif
 
-#if !defined(WASM32)
 /**
  * Use VAD to analyze 10ms of audio frames. If more than 10ms of audio frames
  * are given, only the first 10ms will be used.
  */
 float daily_core_context_vad_analyze(DailyVad *vad, const int16_t *frames, uintptr_t num_frames);
-#endif
 
-#if !defined(WASM32)
 /**
  * Set the WebRTC, mediasoupclient, and daily log levels.
  */
 void daily_core_set_log_level(enum DailyLogLevel log_level);
-#endif
 
-#if !defined(WASM32)
 /**
  * Frees a string returned by a `daily_core_*` function. Does nothing if
  * `string` is null.
@@ -1847,7 +1434,6 @@ void daily_core_set_log_level(enum DailyLogLevel log_level);
  * that hasn't been freed yet. It can't be used after this call.
  */
 void daily_core_string_free(const char *string);
-#endif
 
 #ifdef __cplusplus
 }  // extern "C"
