@@ -735,6 +735,10 @@ typedef struct DailyCallClientInterface {
 } DailyCallClientInterface;
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 #if defined(WASM32)
 extern EventEmitter new(void);
 #endif
@@ -1844,3 +1848,7 @@ void daily_core_set_log_level(enum DailyLogLevel log_level);
  */
 void daily_core_string_free(const char *string);
 #endif
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus

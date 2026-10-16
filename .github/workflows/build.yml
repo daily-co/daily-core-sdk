@@ -110,9 +110,7 @@ jobs:
         run: |
           mkdir -p build/cpp-app
           cat > build/cpp-app/main.cpp <<'CPP'
-          extern "C" {
           #include <daily_core.h>
-          }
           #include <daily_core_version.h>
           #include <cstdio>
           int main() {
