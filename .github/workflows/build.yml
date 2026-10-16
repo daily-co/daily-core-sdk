@@ -62,7 +62,7 @@ jobs:
       - name: Build the examples
         if: steps.release.outputs.has_library == 'true'
         run: |
-          for example in c++ c++-custom-tracks; do
+          for example in c++-audio-mirror c++-custom-tracks; do
             cmake -S "examples/$example" -B "build/$example" -DCMAKE_BUILD_TYPE=Release
             cmake --build "build/$example" --config Release --parallel
           done
@@ -70,7 +70,7 @@ jobs:
       - name: Run an example
         if: steps.release.outputs.has_library == 'true'
         run: |
-          app=$(find build/c++ -type f \( -name daily_example -o -name daily_example.exe \) | head -1)
+          app=$(find build/c++-audio-mirror -type f \( -name daily_example -o -name daily_example.exe \) | head -1)
           "$app" | grep Usage
 
       - name: Check a C app
