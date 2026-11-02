@@ -5,6 +5,48 @@ All notable changes to **daily-core-sdk** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.26.0] - 2026-11-02
+
+### Added
+
+- Dial-in and dial-out events now include the same fields as daily-js:
+  `userId`, `provider` and `sipCallId` on all of them, `origin`,
+  `destination` and `callerId` on dial-out events, and `sipEndpoint` and
+  `sipFrom` on dial-in events. `dialin-ready` now includes `provider`.
+
+- `dialout-error` and `dialin-error` now include a `details` object with
+  `sipStatusCode` and `sipReasonPhrase`, plus `destination` and `sipHeaders`
+  for dial-out and `sipEndpoint` for dial-in. `dialin-error` also includes
+  `type` (e.g. `"start-failed"`).
+
+- `dialout-stopped` now includes `sipStatusCode` and `sipReasonPhrase` when
+  the server reports why the call ended.
+
+### Changed
+
+- **Breaking:** `dialin-error`, `dialin-warning`, `dialout-error` and
+  `dialout-warning` now report the error in `errorMsg` instead of `message`,
+  to match daily-js. Read `errorMsg` where you used to read `message`.
+
+- `dialin-error` does not include `sessionId` when the dial-in fails to start
+  (`type` is `"start-failed"`), since no session exists yet.
+
+### Removed
+
+- **Breaking:** Removed `message` from `dialout-stopped`, to match daily-js.
+  To find out why a dial-out ended, use the new `sipStatusCode` and
+  `sipReasonPhrase` on `dialout-stopped`, or `details` on `dialout-error`.
+
+### Fixed
+
+- Fixed `dialin-error` events not being emitted when a dial-in fails to start.
+
+### Security
+
+- Updated `rustls-webpki` and `webpki-roots` so the distrusted emSign
+  intermediate certificates are no longer trusted (RUSTSEC-2026-0381 and
+  RUSTSEC-2026-0382).
+
 ## [0.25.0] - 2026-10-16
 
 ### Added
