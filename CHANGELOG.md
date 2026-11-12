@@ -5,6 +5,15 @@ All notable changes to **daily-core-sdk** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.26.1] - 2026-11-12
+
+### Fixed
+
+- Fixed a deadlock when reconnecting the signalling channel, for example after
+  a network loss. If looking up the room failed during the reconnect, the
+  client fell back to the server it was already connected to, but held a lock
+  that reconnecting needs, so the reconnect never finished.
+
 ## [0.26.0] - 2026-11-02
 
 ### Added
