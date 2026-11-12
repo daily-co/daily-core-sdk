@@ -21,7 +21,7 @@ It has:
 
 - `include/daily_core.h`: the C API.
 - `include/daily_core_version.h`: the SDK version, e.g. `DAILY_CORE_VERSION`
-  (`"0.26.0"`).
+  (`"0.26.1"`).
 - The library: `lib/libdaily_core.so` on Linux, `lib/libdaily_core.dylib` on
   macOS, and `bin/daily_core.dll` on Windows, which you link with
   `lib/daily_core.dll.lib`.
